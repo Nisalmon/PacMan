@@ -34,29 +34,39 @@ class Player:
         if keys[pg.K_LEFT]:
             self.x -= self.speed * dt
             moving = True
+
         elif keys[pg.K_RIGHT]:
             self.x += self.speed * dt
             moving = True
+
         elif keys[pg.K_UP]:
             self.y -= self.speed * dt
             moving = True
+
         elif keys[pg.K_DOWN]:
             self.y += self.speed * dt
             moving = True
 
         if moving:
             self.anim_timer += dt
+
             if self.anim_timer >= self.__anim_speed:
                 self.anim_timer -= self.__anim_speed
                 self.sprite_index += self.sprite_increment
+
                 if self.sprite_index == 3 or self.sprite_index == 0:
                     self.sprite_increment *= -1
+
             base_sprite = self.get_sprite((0, self.sprite_index))
+
             if keys[pg.K_LEFT]:
                 self.sprite = pg.transform.rotate(base_sprite, 180)
+
             elif keys[pg.K_RIGHT]:
                 self.sprite = pg.transform.rotate(base_sprite, 0)
+
             elif keys[pg.K_UP]:
                 self.sprite = pg.transform.rotate(base_sprite, 90)
+
             elif keys[pg.K_DOWN]:
                 self.sprite = pg.transform.rotate(base_sprite, 270)

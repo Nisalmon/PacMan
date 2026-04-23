@@ -3,9 +3,10 @@ import json
 import pygame as pg
 import os
 from player import Player
-from maze_visu import generate_maze_visu
+from maze_visu import generate_maze_visu, draw_maze, build_maze_visu
 
 
+TILE_SIZE = 32
 WIDTH = 1080
 HEIGHT = 720
 RES = (WIDTH, HEIGHT)
@@ -61,12 +62,17 @@ def main():
     mazegen = MazeGenerator(size=size, seed=conf['seed'])
     mazegen.generate()
     generate_maze_visu(convert_maze(mazegen.maze))
+    screen = pg.display.set_mode(RES)
+    print(mazegen.maze)
+
+    wall_sprite = pg.transform.scale(pg.image.load("Wall.png").convert(), (TILE_SIZE, TILE_SIZE))
     while running:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
         dt = screen_conf['clock'].tick(60) / 1000
         screen_conf['screen'].fill((0, 0, 0))
+        draw_maze(screen, mazegen.maze, wall_sprite)
         screen_conf['screen'].blit(pacman.sprite, (pacman.x, pacman.y))
         pacman.move_player(dt * 2)
         pg.display.update()
