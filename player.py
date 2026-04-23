@@ -1,5 +1,5 @@
 import pygame as pg
-from typing import Union, Tuple
+# from typing import Union, Tuple
 
 
 class Player:

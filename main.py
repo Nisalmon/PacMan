@@ -47,8 +47,8 @@ def load_pygame():
     return screen_conf
 
 
-def load_walls(maze):
-    wall = pg.image.load("wall.png")
+# def load_walls(maze):
+#     wall = pg.image.load("wall.png")
 
 
 def main():
@@ -71,7 +71,7 @@ def main():
         pacman.move_player(dt * 2)
         pg.display.update()
 
-    maze_output = convert_maze(mazegen.maze)
+    # maze_output = convert_maze(mazegen.maze)
     # print(maze_output)
 
 
