@@ -63,16 +63,22 @@ def main():
     mazegen.generate()
     generate_maze_visu(convert_maze(mazegen.maze))
     screen = pg.display.set_mode(RES)
-    print(mazegen.maze)
+    # print(mazegen.maze)
 
-    wall_sprite = pg.transform.scale(pg.image.load("Wall.png").convert(), (TILE_SIZE, TILE_SIZE))
+    wall_sprite = pg.transform.scale(pg.image.load("Wall.png").convert_alpha(), (TILE_SIZE, TILE_SIZE))
+    cross_wall_sprite = pg.transform.scale(pg.image.load("Cross_wall.png").convert_alpha(), (TILE_SIZE, TILE_SIZE))
+    walls = {
+        "wall": wall_sprite,
+        "cross_wall": cross_wall_sprite
+    }
     while running:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
         dt = screen_conf['clock'].tick(60) / 1000
         screen_conf['screen'].fill((0, 0, 0))
-        draw_maze(screen, mazegen.maze, wall_sprite)
+        draw_maze(screen, mazegen.maze, walls)
+        # draw_maze(screen, build_maze_visu(mazegen.maze), walls)
         screen_conf['screen'].blit(pacman.sprite, (pacman.x, pacman.y))
         pacman.move_player(dt * 2)
         pg.display.update()
