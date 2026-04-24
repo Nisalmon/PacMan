@@ -146,6 +146,15 @@ def draw_maze(screen, visu, walls):
                 screen.blit(walls['wall'], (x, y))
                 screen.blit(rotated_wall_180, (x, y))
                 screen.blit(rotated_wall_90, (x, y))
+            if col == 14:
+                screen.blit(rotated_wall_90, (x, y))
+                screen.blit(rotated_wall_180, (x, y))
+                screen.blit(rotated_wall_270, (x, y))
+            if col == 15:
+                screen.blit(walls['wall'], (x, y))
+                screen.blit(rotated_wall_90, (x, y))
+                screen.blit(rotated_wall_180, (x, y))
+                screen.blit(rotated_wall_270, (x, y))
 
 
 # def draw_maze(screen, visu, walls):

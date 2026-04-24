@@ -8,7 +8,7 @@ from maze_visu import generate_maze_visu, draw_maze, build_maze_visu
 
 TILE_SIZE = 32
 WIDTH = 1080
-HEIGHT = 720
+HEIGHT = 1080
 RES = (WIDTH, HEIGHT)
 
 
@@ -55,17 +55,17 @@ def load_pygame():
 def main():
     os.system("clear")
     conf = load_config()
+    size = (conf['width'], conf['height'])
     screen_conf = load_pygame()
     pacman = Player("Pacman.png")
     running = True
-    size = (conf['width'], conf['height'])
     mazegen = MazeGenerator(size=size, seed=conf['seed'])
     mazegen.generate()
     generate_maze_visu(convert_maze(mazegen.maze))
     screen = pg.display.set_mode(RES)
     # print(mazegen.maze)
 
-    wall_sprite = pg.transform.scale(pg.image.load("Wall.png").convert_alpha(), (TILE_SIZE, TILE_SIZE))
+    wall_sprite = pg.transform.scale2x(pg.image.load("Wall.png").convert_alpha())
     cross_wall_sprite = pg.transform.scale(pg.image.load("Cross_wall.png").convert_alpha(), (TILE_SIZE, TILE_SIZE))
     walls = {
         "wall": wall_sprite,
