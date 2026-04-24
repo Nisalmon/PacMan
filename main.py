@@ -2,14 +2,12 @@ from mazegenerator.mazegenerator import MazeGenerator
 import json
 import pygame as pg
 import os
+from pacgums import load_pacgums, draw_pacgums
 from player import Player
-from maze_visu import generate_maze_visu, draw_maze, build_maze_visu
+from maze_visu import draw_maze, build_maze_visu
 
 
 TILE_SIZE = 32
-WIDTH = 1080
-HEIGHT = 1080
-RES = (WIDTH, HEIGHT)
 
 
 def load_config():
@@ -39,32 +37,31 @@ def convert_maze(maze: list[int]) -> list[int]:
     return n_maze
 
 
-def load_pygame():
+def load_pygame(size):
     screen_conf = {}
     pg.init()
     pg.display.init()
-    screen_conf['screen'] = pg.display.set_mode(RES)
+    screen_conf['screen'] = pg.display.set_mode((size[0] * TILE_SIZE * 2, size[1] * TILE_SIZE * 2))
     screen_conf['clock'] = pg.time.Clock()
     return screen_conf
-
-
-# def load_walls(maze):
-#     wall = pg.image.load("wall.png")
 
 
 def main():
     os.system("clear")
     conf = load_config()
     size = (conf['width'], conf['height'])
-    screen_conf = load_pygame()
+    screen_conf = load_pygame(size)
     pacman = Player("Pacman.png")
     running = True
     mazegen = MazeGenerator(size=size, seed=conf['seed'])
     mazegen.generate()
-    generate_maze_visu(convert_maze(mazegen.maze))
-    screen = pg.display.set_mode(RES)
-    # print(mazegen.maze)
+    visu = build_maze_visu(convert_maze(mazegen.maze))
+    screen = screen_conf['screen']
 
+    pacgums = []
+    nb_pacgum = conf['pacgums']
+    if load_pacgums(pacgums, nb_pacgum, convert_maze(mazegen.maze), visu) == 0:
+        return
     wall_sprite = pg.transform.scale2x(pg.image.load("Wall.png").convert_alpha())
     cross_wall_sprite = pg.transform.scale(pg.image.load("Cross_wall.png").convert_alpha(), (TILE_SIZE, TILE_SIZE))
     walls = {
@@ -76,15 +73,12 @@ def main():
             if event.type == pg.QUIT:
                 running = False
         dt = screen_conf['clock'].tick(60) / 1000
-        screen_conf['screen'].fill((0, 0, 0))
+        screen.fill((0, 0, 0))
         draw_maze(screen, mazegen.maze, walls)
-        # draw_maze(screen, build_maze_visu(mazegen.maze), walls)
-        screen_conf['screen'].blit(pacman.sprite, (pacman.x, pacman.y))
+        draw_pacgums(pacgums, screen)
+        screen.blit(pacman.sprite, (pacman.x, pacman.y))
         pacman.move_player(dt * 2)
         pg.display.update()
-
-    # maze_output = convert_maze(mazegen.maze)
-    # print(maze_output)
 
 
 if __name__ == "__main__":

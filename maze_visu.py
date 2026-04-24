@@ -106,6 +106,7 @@ def draw_maze(screen, visu, walls):
     rotated_wall_270 = pg.transform.rotate(walls['wall'], 270)
     for r_id, row in enumerate(visu):
         for c_id, col in enumerate(row):
+            print(r_id)
             x = c_id * TILE_SIZE * 2
             y = r_id * TILE_SIZE * 2
             if col == 1:
@@ -116,7 +117,7 @@ def draw_maze(screen, visu, walls):
                 screen.blit(walls['wall'], (x, y))
                 screen.blit(rotated_wall_270, (x, y))
             if col == 4:
-                screen.blit(walls['wall'], (x, y))
+                screen.blit(rotated_wall_180, (x, y))
             if col == 5:
                 screen.blit(walls['wall'], (x, y))
                 screen.blit(rotated_wall_180, (x, y))
@@ -155,27 +156,3 @@ def draw_maze(screen, visu, walls):
                 screen.blit(rotated_wall_90, (x, y))
                 screen.blit(rotated_wall_180, (x, y))
                 screen.blit(rotated_wall_270, (x, y))
-
-
-# def draw_maze(screen, visu, walls):
-#     rotated_wall = pg.transform.rotate(walls['wall'], 90)
-#     for r_id in range(int((len(visu) - 1) / 2)):
-#         for c_id in range(int((len(visu[0]) - 1) / 2)):
-#             x = c_id * TILE_SIZE * 2
-#             y = r_id * TILE_SIZE * 2
-#             print(f"visu[{r_id * 2}][{c_id * 2}] = '{visu[r_id * 2][c_id * 2]}'")
-#             print(f"visu[{r_id * 2}][{c_id * 2 + 1}] = '{visu[r_id * 2][c_id * 2 + 1]}'")
-#             print(f"visu[{r_id * 2}][{c_id * 2 - 1}] = '{visu[r_id * 2][c_id * 2 - 1]}'")
-#             if (visu[r_id * 2][c_id * 2] == "█" and
-#                     visu[r_id * 2][c_id * 2 + 1] == "█" and
-#                     visu[r_id * 2][c_id * 2 - 1] == "█"):
-#                 screen.blit(walls['wall'], (x, y - 2))
-#             if (visu[r_id * 2][c_id * 2] == "█" and
-#                     visu[r_id * 2 + 1][c_id * 2] == "█" and
-#                     visu[r_id * 2 - 1][c_id * 2] == "█"):
-#                 screen.blit(rotated_wall, (x, y))
-#             if visu[r_id][c_id] == 3:
-#                 screen.blit(walls['wall'], (x, y - 2))
-#                 screen.blit(rotated_wall, (x + 2, y))
-#             if visu[r_id][c_id] == 4:
-#                 screen.blit(walls['wall'], (x, y + 2))

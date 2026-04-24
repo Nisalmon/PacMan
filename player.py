@@ -26,7 +26,7 @@ class Player:
             if colorkey == -1:
                 colorkey = img.get_at((0, 0))
             img.set_colorkey(colorkey, pg.RLEACCEL)
-        return img
+        return pg.transform.scale(img, (24, 24))
 
     def move_player(self, dt):
         keys = pg.key.get_pressed()
