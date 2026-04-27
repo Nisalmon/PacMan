@@ -12,26 +12,6 @@ def build_maze_visu(maze):
     return break_walls(visu, maze)
 
 
-def generate_maze_visu(maze):
-    visu = [["█" for _ in range(len(maze[0]) * 2 + 1)]
-            for _ in range(len(maze) * 2 + 1)]
-
-    for i in range(len(maze[0])):
-        for j in range(len(maze)):
-            visu[j * 2 + 1][i * 2 + 1] = " "
-
-    for elem in maze:
-        for ch in elem:
-            print(ch, end="")
-        print()
-    print()
-    visu = break_walls(visu, maze)
-    for elem in visu:
-        for ch in elem:
-            print(ch, end="")
-        print()
-
-
 def break_walls(visu, maze):
     for i in range(len(maze)):
         for j in range(len(maze[0])):
@@ -104,78 +84,56 @@ def draw_maze(screen, visu, walls):
     rotated_wall_90 = pg.transform.rotate(walls['wall'], 90)
     rotated_wall_180 = pg.transform.rotate(walls['wall'], 180)
     rotated_wall_270 = pg.transform.rotate(walls['wall'], 270)
+    rotated_corner_wall_90 = pg.transform.rotate(walls['corner_wall'], 90)
+    rotated_corner_wall_180 = pg.transform.rotate(walls['corner_wall'], 180)
+    rotated_corner_wall_270 = pg.transform.rotate(walls['corner_wall'], 270)
+    rotated_incline_wall_90 = pg.transform.rotate(walls['incline_wall'], 90)
+    rotated_incline_wall_180 = pg.transform.rotate(walls['incline_wall'], 180)
+    rotated_incline_wall_270 = pg.transform.rotate(walls['incline_wall'], 270)
+    rotated_triple_wall_90 = pg.transform.rotate(walls['triple_wall'], 90)
+    rotated_triple_wall_180 = pg.transform.rotate(walls['triple_wall'], 180)
+    rotated_triple_wall_270 = pg.transform.rotate(walls['triple_wall'], 270)
     for r_id, row in enumerate(visu):
         for c_id, col in enumerate(row):
             x = c_id * TILE_SIZE * 2
             y = r_id * TILE_SIZE * 2
-            if col == 1:
-                screen.blit(walls['wall'], (x, y))
-            if col == 2:
-                screen.blit(rotated_wall_270, (x, y))
-            if col == 3:
-                screen.blit(walls['wall'], (x, y))
-                screen.blit(rotated_wall_270, (x, y))
-            if col == 4:
-                screen.blit(walls['wall'], (x, y))
-            if col == 5:
-                screen.blit(walls['wall'], (x, y))
-                screen.blit(rotated_wall_180, (x, y))
-            if col == 6:
-                screen.blit(rotated_wall_180, (x, y))
-                screen.blit(rotated_wall_270, (x, y))
-            if col == 7:
-                screen.blit(walls['wall'], (x, y))
-                screen.blit(rotated_wall_180, (x, y))
-                screen.blit(rotated_wall_270, (x, y))
-            if col == 8:
-                screen.blit(rotated_wall_90, (x, y))
-            if col == 9:
-                screen.blit(rotated_wall_90, (x, y))
-                screen.blit(walls['wall'], (x, y))
-            if col == 10:
-                screen.blit(rotated_wall_270, (x, y))
-                screen.blit(rotated_wall_90, (x, y))
-            if col == 11:
-                screen.blit(rotated_wall_270, (x, y))
-                screen.blit(rotated_wall_90, (x, y))
-                screen.blit(walls['wall'], (x, y))
-            if col == 12:
-                screen.blit(rotated_wall_180, (x, y))
-                screen.blit(rotated_wall_90, (x, y))
-            if col == 13:
-                screen.blit(walls['wall'], (x, y))
-                screen.blit(rotated_wall_180, (x, y))
-                screen.blit(rotated_wall_90, (x, y))
-            if col == 14:
-                screen.blit(rotated_wall_90, (x, y))
-                screen.blit(rotated_wall_180, (x, y))
-                screen.blit(rotated_wall_270, (x, y))
-            if col == 15:
-                screen.blit(walls['wall'], (x, y))
-                screen.blit(rotated_wall_90, (x, y))
-                screen.blit(rotated_wall_180, (x, y))
-                screen.blit(rotated_wall_270, (x, y))
+            cell = visu[r_id][c_id]
+            has_N = bool(cell & 1)
+            has_E = bool(cell & 2)
+            has_S = bool(cell & 4)
+            has_W = bool(cell & 8)
 
-
-# def draw_maze(screen, visu, walls):
-#     rotated_wall = pg.transform.rotate(walls['wall'], 90)
-#     for r_id in range(int((len(visu) - 1) / 2)):
-#         for c_id in range(int((len(visu[0]) - 1) / 2)):
-#             x = c_id * TILE_SIZE * 2
-#             y = r_id * TILE_SIZE * 2
-#             print(f"visu[{r_id * 2}][{c_id * 2}] = '{visu[r_id * 2][c_id * 2]}'")
-#             print(f"visu[{r_id * 2}][{c_id * 2 + 1}] = '{visu[r_id * 2][c_id * 2 + 1]}'")
-#             print(f"visu[{r_id * 2}][{c_id * 2 - 1}] = '{visu[r_id * 2][c_id * 2 - 1]}'")
-#             if (visu[r_id * 2][c_id * 2] == "█" and
-#                     visu[r_id * 2][c_id * 2 + 1] == "█" and
-#                     visu[r_id * 2][c_id * 2 - 1] == "█"):
-#                 screen.blit(walls['wall'], (x, y - 2))
-#             if (visu[r_id * 2][c_id * 2] == "█" and
-#                     visu[r_id * 2 + 1][c_id * 2] == "█" and
-#                     visu[r_id * 2 - 1][c_id * 2] == "█"):
-#                 screen.blit(rotated_wall, (x, y))
-#             if visu[r_id][c_id] == 3:
-#                 screen.blit(walls['wall'], (x, y - 2))
-#                 screen.blit(rotated_wall, (x + 2, y))
-#             if visu[r_id][c_id] == 4:
-#                 screen.blit(walls['wall'], (x, y + 2))
+            if has_N and not has_E and not has_W:
+                screen.blit(walls['wall'], (x, y))
+            if has_N and has_E:
+                screen.blit(walls['incline_wall'], (x, y))
+            if has_N and has_W:
+                screen.blit(rotated_incline_wall_90, (x, y))
+            if has_S and not has_E and not has_W:
+                screen.blit(rotated_wall_180, (x, y))
+            if has_S and has_E:
+                screen.blit(rotated_incline_wall_270, (x, y))
+            if has_S and has_W:
+                screen.blit(rotated_incline_wall_180, (x, y))
+            if has_E and not has_N and not has_S:
+                screen.blit(rotated_wall_270, (x, y))
+            if has_W and not has_N and not has_S:
+                screen.blit(rotated_wall_90, (x, y))
+            if not has_N and not has_E:
+                screen.blit(rotated_corner_wall_180, (x, y))
+            if not has_E and not has_S:
+                screen.blit(rotated_corner_wall_90, (x, y))
+            if not has_S and not has_W:
+                screen.blit(walls["corner_wall"], (x, y))
+            if not has_W and not has_N:
+                screen.blit(rotated_corner_wall_270, (x, y))
+            if has_N and has_E and has_W:
+                screen.blit(walls["triple_wall"], (x, y))
+            if has_E and has_N and has_S:
+                screen.blit(rotated_triple_wall_270, (x, y))
+            if has_S and has_E and has_W:
+                screen.blit(rotated_triple_wall_180, (x, y))
+            if has_W and has_N and has_S:
+                screen.blit(rotated_triple_wall_90, (x, y))
+            if has_E and has_N and has_S and has_W:
+                screen.blit(walls["four_wall"], (x, y))
