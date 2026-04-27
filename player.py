@@ -1,8 +1,5 @@
 import pygame as pg
-# from typing import Union, Tuple
 
-
-TILE_SIZE = 32
 
 class Player:
     def __init__(self, x, y, sprite_loc):
@@ -10,6 +7,7 @@ class Player:
         self.y = y
         self._sheet = pg.image.load(sprite_loc).convert_alpha()
         self._sprite_size = (32, 32)
+        self._scaled = (24, 24)
         self.sprite = self.get_sprite((0, 0))
         self.sprite_index = 0
         self.sprite_increment = 1
@@ -29,17 +27,13 @@ class Player:
             if colorkey == -1:
                 colorkey = img.get_at((0, 0))
             img.set_colorkey(colorkey, pg.RLEACCEL)
-        return pg.transform.scale(img, (24, 24))
+        return pg.transform.scale(img, (self._scaled[0],
+                                        self._scaled[1]))
 
-    def move_player(self, dt, cells, visu):
+    def move_player(self, dt, visu):
         keys = pg.key.get_pressed()
-        if keys[pg.K_UP] or keys[pg.K_DOWN]:
-            self.x = round(self.x / 4) * 4
-
-        elif keys[pg.K_LEFT] or keys[pg.K_RIGHT]:
-            self.y = round(self.y / 4) * 4
         moving = False
-        if self.can_move(cells, keys, dt, visu):
+        if self.can_move(keys, dt, visu):
             if keys[pg.K_LEFT]:
                 self.x -= self.speed * dt
                 moving = True
@@ -79,17 +73,15 @@ class Player:
 
             elif keys[pg.K_DOWN]:
                 self.sprite = pg.transform.rotate(base_sprite, 270)
-            
-            
 
     def eat_pacgums(self, pacgums):
         for gum in pacgums:
             if (abs(self.x - gum.x) < 10 and
-                abs(self.y - gum.y) < 10):
+               abs(self.y - gum.y) < 10):
                 self.score += 10
                 pacgums.pop(pacgums.index(gum))
 
-    def can_move(self, cells, dir, dt, visu) -> bool:
+    def can_move(self, dir, dt, visu) -> bool:
         check_x = self.x
         check_y = self.y
 
@@ -102,8 +94,14 @@ class Player:
         elif dir[pg.K_DOWN]:
             check_y += self.speed * dt
 
-        center_x, center_y = check_x + 12, check_y + 12
-        grid_x, grid_y = int(center_x/32), int(center_y/32)
-        grid_x2, grid_y2 = int((center_x + 12)/32), int((center_y + 12)/32)
+        center_x = check_x + self._scaled[0]/2
+        center_y = check_y + self._scaled[1]/2
+        grid_x1, grid_y1 = int(center_x/32), int(center_y/32)
+        grid_x2, grid_y2 = int((center_x + 30)/32), int(center_y/32)
+        grid_x3, grid_y3 = int(center_x/32), int((center_y + 30)/32)
+        grid_x4, grid_y4 = int((center_x + 30)/32), int((center_y + 30)/32)
 
-        return visu[grid_y][grid_x] == " "
+        return (visu[grid_y1][grid_x1] == " " and
+                visu[grid_y2][grid_x2] == " " and
+                visu[grid_y3][grid_x3] == " " and
+                visu[grid_y4][grid_x4] == " ")

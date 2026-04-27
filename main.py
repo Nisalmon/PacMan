@@ -3,7 +3,6 @@ import json
 import pygame as pg
 import os
 from player import Player
-from cells import Cells, init_cells
 from pacgums import load_pacgums, draw_pacgums
 from maze_visu import draw_maze, build_maze_visu
 
@@ -42,15 +41,18 @@ def load_pygame(size):
     screen_conf = {}
     pg.init()
     pg.display.init()
-    screen_conf['screen'] = pg.display.set_mode((size[0] * TILE_SIZE * 2, size[1] * TILE_SIZE * 2))
+    screen_conf['screen'] = pg.display.set_mode((size[0] * TILE_SIZE * 2,
+                                                 size[1] * TILE_SIZE * 2))
     screen_conf['clock'] = pg.time.Clock()
     return screen_conf
 
 
 def debug_print_visu(player, visu):
+    os.system("clear")
     for i in range(len(visu)):
         for j in range(len(visu[0])):
-            if i == int((player.y + 23) / 32) and j == int((player.x + 23) / 32):
+            if (i == int((player.y + 23) / 32) and
+               j == int((player.x + 23) / 32)):
                 print("P", end="")
             else:
                 print(visu[i][j], end="")
@@ -58,7 +60,7 @@ def debug_print_visu(player, visu):
 
 
 def main():
-    os.system("cls")
+    os.system("clear")
     conf = load_config()
     size = (conf['width'], conf['height'])
     screen_conf = load_pygame(size)
@@ -68,13 +70,22 @@ def main():
     mazegen = MazeGenerator(size=size, seed=conf['seed'])
     mazegen.generate()
     visu = build_maze_visu(convert_maze(mazegen.maze))
-    cells = init_cells(visu)
 
-    wall_sprite = pg.transform.scale2x(pg.image.load("sprite/Wall.png").convert_alpha())
-    corner_wall_sprite = pg.transform.scale2x(pg.image.load("sprite/Corner_wall.png").convert_alpha())
-    incline_wall_sprite = pg.transform.scale2x(pg.image.load("sprite/Incline_wall.png").convert_alpha())
-    four_wall_sprite = pg.transform.scale2x(pg.image.load("sprite/Four_wall.png").convert_alpha())
-    Triple_wall_sprite = pg.transform.scale2x(pg.image.load("sprite/Triple_wall.png").convert_alpha())
+    wall_sprite = pg.transform.scale2x(
+        pg.image.load("sprite/Wall.png").convert_alpha()
+        )
+    corner_wall_sprite = pg.transform.scale2x(
+        pg.image.load("sprite/Corner_wall.png").convert_alpha()
+        )
+    incline_wall_sprite = pg.transform.scale2x(
+        pg.image.load("sprite/Incline_wall.png").convert_alpha()
+        )
+    four_wall_sprite = pg.transform.scale2x(
+        pg.image.load("sprite/Four_wall.png").convert_alpha()
+        )
+    Triple_wall_sprite = pg.transform.scale2x(
+        pg.image.load("sprite/Triple_wall.png").convert_alpha()
+        )
     walls = {
         "wall": wall_sprite,
         "corner_wall": corner_wall_sprite,
@@ -83,10 +94,10 @@ def main():
         "triple_wall": Triple_wall_sprite
     }
     pacgums = []
-    if (load_pacgums(pacgums, conf['pacgums'], convert_maze(mazegen.maze), visu)) == 0:
+    if (load_pacgums(pacgums, conf['pacgums'],
+                     convert_maze(mazegen.maze), visu)) == 0:
         return
     while running:
-        os.system("cls")
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
@@ -95,11 +106,14 @@ def main():
         draw_maze(screen, mazegen.maze, walls)
         draw_pacgums(pacgums, screen)
         pacman.eat_pacgums(pacgums)
-        pg.display.set_caption(f"Score: {pacman.score}. Coords: {int(pacman.x)}/{int(pacman.y)}")
+        pg.display.set_caption(f"Score: {pacman.score}. " +
+                               f"Coords: {int(pacman.x)}/{int(pacman.y)}")
         screen_conf['screen'].blit(pacman.sprite, (pacman.x, pacman.y))
-        pacman.move_player(dt * 2, cells, visu)
-
-        debug_print_visu(pacman, visu)
+        p_x, p_y = int(pacman.x), int(pacman.y)
+        pacman.move_player(dt * 2, visu)
+        n_p_x, n_p_y = int(pacman.x), int(pacman.y)
+        if p_x != n_p_x or p_y != n_p_y:
+            debug_print_visu(pacman, visu)
 
         pg.display.update()
 
