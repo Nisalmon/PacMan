@@ -1,6 +1,11 @@
 import pygame as pg
 
 
+TILE_SIZE = 32
+HALF_TILE = TILE_SIZE // 2
+HALF_PLAYER = 24 // 2
+
+
 class Player:
     def __init__(self, x, y, sprite_loc):
         self.x = x
@@ -11,10 +16,11 @@ class Player:
         self.sprite = self.get_sprite((0, 0))
         self.sprite_index = 0
         self.sprite_increment = 1
-        self.speed = 32
+        self.speed = 64
         self.anim_timer = 0
         self.__anim_speed = 0.08
         self.score = 0
+        self.direction = []
 
     def get_sprite(self, loc, colorkey=(255, 255, 255)):
         x = loc[1] * self._sprite_size[0]
@@ -32,47 +38,63 @@ class Player:
 
     def move_player(self, dt, visu):
         keys = pg.key.get_pressed()
-        moving = False
-        if self.can_move(keys, dt, visu):
-            if keys[pg.K_LEFT]:
-                self.x -= self.speed * dt
-                moving = True
+        dir = self.direction[0] if self.direction else ""
+        dir2 = (self.can_move(self.direction[1], dt, visu)
+                if len(self.direction) == 2 else False)
+        if keys[pg.K_LEFT]:
+            if len(self.direction) < 2 and "LEFT" not in self.direction:
+                self.direction.append("LEFT")
+            elif len(self.direction) == 2 and "LEFT" not in self.direction:
+                self.direction[1] = "LEFT"
 
-            elif keys[pg.K_RIGHT]:
-                self.x += self.speed * dt
-                moving = True
+        elif keys[pg.K_RIGHT]:
+            if len(self.direction) < 2 and "RIGHT" not in self.direction:
+                self.direction.append("RIGHT")
+            elif len(self.direction) == 2 and "RIGHT" not in self.direction:
+                self.direction[1] = "RIGHT"
 
-            elif keys[pg.K_UP]:
-                self.y -= self.speed * dt
-                moving = True
+        elif keys[pg.K_UP]:
+            if len(self.direction) < 2 and "UP" not in self.direction:
+                self.direction.append("UP")
+            elif len(self.direction) == 2 and "UP" not in self.direction:
+                self.direction[1] = "UP"
 
-            elif keys[pg.K_DOWN]:
-                self.y += self.speed * dt
-                moving = True
+        elif keys[pg.K_DOWN]:
+            if len(self.direction) < 2 and "DOWN" not in self.direction:
+                self.direction.append("DOWN")
+            elif len(self.direction) == 2 and "DOWN" not in self.direction:
+                self.direction[1] = "DOWN"
 
-        if moving:
-            self.anim_timer += dt
+        self.anim_timer += dt
 
-            if self.anim_timer >= self.__anim_speed:
-                self.anim_timer -= self.__anim_speed
-                self.sprite_index += self.sprite_increment
+        if self.anim_timer >= self.__anim_speed:
+            self.anim_timer -= self.__anim_speed
+            self.sprite_index += self.sprite_increment
 
-                if self.sprite_index == 3 or self.sprite_index == 0:
-                    self.sprite_increment *= -1
+            if self.sprite_index == 3 or self.sprite_index == 0:
+                self.sprite_increment *= -1
 
-            base_sprite = self.get_sprite((0, self.sprite_index))
+        base_sprite = self.get_sprite((0, self.sprite_index))
+        if self.can_move(dir, dt, visu) and dir2 is False:
+            if len(self.direction) > 0:
+                if self.direction[0] == "LEFT":
+                    self.sprite = pg.transform.rotate(base_sprite, 180)
+                    self.x -= self.speed * dt
 
-            if keys[pg.K_LEFT]:
-                self.sprite = pg.transform.rotate(base_sprite, 180)
+                elif self.direction[0] == "RIGHT":
+                    self.sprite = pg.transform.rotate(base_sprite, 0)
+                    self.x += self.speed * dt
 
-            elif keys[pg.K_RIGHT]:
-                self.sprite = pg.transform.rotate(base_sprite, 0)
+                elif self.direction[0] == "UP":
+                    self.sprite = pg.transform.rotate(base_sprite, 90)
+                    self.y -= self.speed * dt
 
-            elif keys[pg.K_UP]:
-                self.sprite = pg.transform.rotate(base_sprite, 90)
-
-            elif keys[pg.K_DOWN]:
-                self.sprite = pg.transform.rotate(base_sprite, 270)
+                elif self.direction[0] == "DOWN":
+                    self.sprite = pg.transform.rotate(base_sprite, 270)
+                    self.y += self.speed * dt
+        else:
+            if (dir2 is True):
+                self.direction.pop(0)
 
     def eat_pacgums(self, pacgums):
         for gum in pacgums:
@@ -85,23 +107,36 @@ class Player:
         check_x = self.x
         check_y = self.y
 
-        if dir[pg.K_LEFT]:
+        if dir == "LEFT":
             check_x -= self.speed * dt
-        elif dir[pg.K_RIGHT]:
+        elif dir == "RIGHT":
             check_x += self.speed * dt
-        elif dir[pg.K_UP]:
+        elif dir == "UP":
             check_y -= self.speed * dt
-        elif dir[pg.K_DOWN]:
+        elif dir == "DOWN":
             check_y += self.speed * dt
 
         center_x = check_x + self._scaled[0]/2
         center_y = check_y + self._scaled[1]/2
-        grid_x1, grid_y1 = int(center_x/32), int(center_y/32)
-        grid_x2, grid_y2 = int((center_x + 30)/32), int(center_y/32)
-        grid_x3, grid_y3 = int(center_x/32), int((center_y + 30)/32)
+        grid_x1, grid_y1 = int((center_x)/32), int((center_y)/32)
+        grid_x2, grid_y2 = int((center_x + 30)/32), int((center_y)/32)
+        grid_x3, grid_y3 = int((center_x)/32), int((center_y + 30)/32)
         grid_x4, grid_y4 = int((center_x + 30)/32), int((center_y + 30)/32)
-
         return (visu[grid_y1][grid_x1] == " " and
                 visu[grid_y2][grid_x2] == " " and
                 visu[grid_y3][grid_x3] == " " and
                 visu[grid_y4][grid_x4] == " ")
+
+    def valid_move(self, dir, visu):
+        check_x = int((self.x - 12) // 32)
+        check_y = int((self.y - 12) // 32)
+        if dir == "LEFT":
+            check_x -= 1
+        elif dir == "RIGHT":
+            check_x += 1
+        elif dir == "UP":
+            check_y -= 1
+        elif dir == "DOWN":
+            check_y += 1
+
+        return (visu[check_y][check_x] == " ")

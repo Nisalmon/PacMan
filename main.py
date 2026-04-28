@@ -98,6 +98,8 @@ def main():
                      convert_maze(mazegen.maze), visu)) == 0:
         return
     while running:
+        os.system("clear")
+        print(pacman.direction)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
@@ -107,14 +109,10 @@ def main():
         draw_pacgums(pacgums, screen)
         pacman.eat_pacgums(pacgums)
         pg.display.set_caption(f"Score: {pacman.score}. " +
-                               f"Coords: {int(pacman.x)}/{int(pacman.y)}")
+                               f"Coords: {int((pacman.x + pacman._scaled[0]/2) // 32)}/{int((pacman.y + pacman._scaled[1]/2) // 32)}")
         screen_conf['screen'].blit(pacman.sprite, (pacman.x, pacman.y))
-        p_x, p_y = int(pacman.x), int(pacman.y)
         pacman.move_player(dt * 2, visu)
-        n_p_x, n_p_y = int(pacman.x), int(pacman.y)
-        if p_x != n_p_x or p_y != n_p_y:
-            debug_print_visu(pacman, visu)
-
+        pg.draw.rect(screen, (255, 0, 0), (pacman.x, pacman.y, 24, 24), 1)
         pg.display.update()
 
 
