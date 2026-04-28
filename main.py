@@ -5,6 +5,7 @@ import os
 from player import Player
 from pacgums import load_pacgums, draw_pacgums
 from maze_visu import draw_maze, build_maze_visu
+from ghost import Ghost
 
 
 TILE_SIZE = 32
@@ -93,13 +94,14 @@ def main():
         "four_wall": four_wall_sprite,
         "triple_wall": Triple_wall_sprite
     }
+    ghosts = {
+        "blinky": Ghost("blinky")
+    }
     pacgums = []
     if (load_pacgums(pacgums, conf['pacgums'],
                      convert_maze(mazegen.maze), visu)) == 0:
         return
     while running:
-        os.system("clear")
-        print(pacman.direction)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
@@ -112,7 +114,6 @@ def main():
                                f"Coords: {int((pacman.x + pacman._scaled[0]/2) // 32)}/{int((pacman.y + pacman._scaled[1]/2) // 32)}")
         screen_conf['screen'].blit(pacman.sprite, (pacman.x, pacman.y))
         pacman.move_player(dt * 2, visu)
-        pg.draw.rect(screen, (255, 0, 0), (pacman.x, pacman.y, 24, 24), 1)
         pg.display.update()
 
 

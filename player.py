@@ -93,7 +93,7 @@ class Player:
                     self.sprite = pg.transform.rotate(base_sprite, 270)
                     self.y += self.speed * dt
         else:
-            if (dir2 is True):
+            if len(self.direction) == 2:
                 self.direction.pop(0)
 
     def eat_pacgums(self, pacgums):
