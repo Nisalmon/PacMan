@@ -5,7 +5,7 @@ import os
 from player import Player
 from pacgums import load_pacgums, draw_pacgums
 from maze_visu import draw_maze, build_maze_visu
-from ghost import Ghost
+from ghost import Ghost, draw_ghosts, move_all_ghosts
 
 
 TILE_SIZE = 32
@@ -95,12 +95,14 @@ def main():
         "triple_wall": Triple_wall_sprite
     }
     ghosts = {
-        "blinky": Ghost("blinky")
+        "blinky": Ghost("blinky", visu, 20, 20)
     }
+    ghosts['blinky'].set_algo((int((pacman.x + 12) // 32), int((pacman.y + 12) // 32)))
     pacgums = []
     if (load_pacgums(pacgums, conf['pacgums'],
                      convert_maze(mazegen.maze), visu)) == 0:
         return
+    print(ghosts['blinky'].path)
     while running:
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -114,6 +116,8 @@ def main():
                                f"Coords: {int((pacman.x + pacman._scaled[0]/2) // 32)}/{int((pacman.y + pacman._scaled[1]/2) // 32)}")
         screen_conf['screen'].blit(pacman.sprite, (pacman.x, pacman.y))
         pacman.move_player(dt * 2, visu)
+        move_all_ghosts(ghosts)
+        draw_ghosts(screen, ghosts)
         pg.display.update()
 
 
