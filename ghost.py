@@ -1,9 +1,10 @@
 import pygame as pg
 from collections import deque
+from player import Player
 
 
 class Ghost:
-    def __init__(self, name, visu, x, y):
+    def __init__(self, name, visu, x, y, target):
         self.__name = name
         self.x = x
         self.y = y
@@ -12,7 +13,10 @@ class Ghost:
         self._sheet = self.load_sprite_sheet()
         self.sprite = self.get_sprite((0, 0))
         self.path = []
+        self.previous = ""
         self.__visu = visu
+        self.target: Player = target
+        self.speed = 48
 
     def load_sprite_sheet(self):
         if self.__name == "blinky":
@@ -64,22 +68,9 @@ class Ghost:
                 width = len(self.__visu[0])
                 if nx < 0 or nx >= width or ny < 0 or ny >= height:
                     continue
-                if d == "UP" and self.__visu[y][x] == "█":
+                if self.__visu[y][x] == "█":
                     continue
-                if d == "DOWN" and self.__visu[y][x] == "█":
-                    continue
-                if d == "LEFT" and self.__visu[y][x] == "█":
-                    continue
-                if d == "RIGHT" and self.__visu[y][x] == "█":
-                    continue
-
-                if d == "UP" and self.__visu[ny][nx] == "█":
-                    continue
-                if d == "DOWN" and self.__visu[ny][nx] == "█":
-                    continue
-                if d == "LEFT" and self.__visu[ny][nx] == "█":
-                    continue
-                if d == "RIGHT" and self.__visu[ny][nx] == "█":
+                if self.__visu[ny][nx] == "█":
                     continue
                 if (nx, ny) in visited:
                     continue
@@ -98,16 +89,73 @@ class Ghost:
         path.reverse()
         return path
 
-    def move_ghost(self):
-        if self.path[0] == "UP":
-            self.y -= 32
-        elif self.path[0] == "DOWN":
-            self.y += 32
-        elif self.path[0] == "LEFT":
-            self.x -= 32
-        elif self.path[0] == "RIGHT":
-            self.x += 32
-        self.path.pop(0)
+    def move_ghost(self, dt):
+        target = (
+                    int((self.target.x + self._scaled[0] / 2) // 32),
+                    int((self.target.y + self._scaled[1] / 2) // 32)
+                )
+        if self.path:
+            if self.path[0] == "UP":
+                self.y -= self.speed * dt
+            elif self.path[0] == "DOWN":
+                self.y += self.speed * dt
+            elif self.path[0] == "LEFT":
+                self.x -= self.speed * dt
+            elif self.path[0] == "RIGHT":
+                self.x += self.speed * dt
+            
+            if len(self.path) >= 2 and self.can_move(self.path[1], dt, self.__visu):
+                self.previous = self.path.pop(0)
+            elif len(self.path) == 1:
+                self.previous = self.path.pop(0)
+            if (self.path and self.previous != self.path[0] and self.previous != ""):
+                self.set_algo(target)
+        else:
+            self.set_algo(target)
+
+    def can_move(self, dir, dt, visu) -> bool:
+        check_x = self.x
+        check_y = self.y
+
+        if dir == "LEFT":
+            check_x -= self.speed * dt
+        elif dir == "RIGHT":
+            check_x += self.speed * dt
+        elif dir == "UP":
+            check_y -= self.speed * dt
+        elif dir == "DOWN":
+            check_y += self.speed * dt
+
+        center_x = int(check_x + self._scaled[0]/2)
+        center_y = int(check_y + self._scaled[1]/2)
+
+        grid_x1, grid_y1 = int((center_x) / 32), int(center_y / 32)
+        grid_x2, grid_y2 = int((center_x + 30) / 32), int(center_y / 32)
+        grid_x3, grid_y3 = int((center_x)/ 32), int((center_y + 30) / 32)
+        grid_x4, grid_y4 = int((center_x + 30) / 32), int((center_y + 30) / 32)
+        return (visu[grid_y1][grid_x1] == " " and
+                visu[grid_y2][grid_x2] == " " and
+                visu[grid_y3][grid_x3] == " " and
+                visu[grid_y4][grid_x4] == " ")
+
+    def snap_to_grid(self, tile_size=32, threshold=2):
+        center_x = self.x + self._scaled[0] / 2
+        center_y = self.y + self._scaled[1] / 2
+
+        # centre de la case la plus proche
+        target_x = round(center_x / tile_size) * tile_size
+        target_y = round(center_y / tile_size) * tile_size
+
+        # snap uniquement si proche du centre
+        if abs(center_x - target_x) < threshold:
+            center_x = target_x
+        if abs(center_y - target_y) < threshold:
+            center_y = target_y
+
+        # remettre en coords sprite (top-left)
+        self.x = center_x - self._scaled[0] / 2
+        self.y = center_y - self._scaled[1] / 2
+        
 
 
 def draw_ghosts(screen, ghosts):
@@ -115,6 +163,6 @@ def draw_ghosts(screen, ghosts):
         screen.blit(value.sprite, (value.x, value.y))
 
 
-def move_all_ghosts(ghosts):
+def move_all_ghosts(ghosts, dt):
     for _, value in ghosts.items():
-        value.move_ghost()
+        value.move_ghost(dt)
