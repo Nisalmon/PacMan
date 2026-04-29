@@ -115,9 +115,13 @@ def main():
         pg.display.set_caption(f"Score: {pacman.score}. " +
                                f"Coords: {int((pacman.x + pacman._scaled[0]/2) // 32)}/{int((pacman.y + pacman._scaled[1]/2) // 32)}")
         screen_conf['screen'].blit(pacman.sprite, (pacman.x, pacman.y))
+        pg.draw.rect(screen, (0, 255, 0), (pacman.x + pacman._scaled[0]/2, pacman.y + pacman._scaled[1]/2, 30, 30), 1)
         pacman.move_player(dt * 2, visu)
         move_all_ghosts(ghosts, dt * 2)
         draw_ghosts(screen, ghosts)
+        for i in range(size[1] * 2 + 1):
+            for j in range(size[0] * 2 + 1):
+                pg.draw.rect(screen, (255, 0, 0), (j*32, i*32, 32, 32), 1)
         pg.display.update()
 
 

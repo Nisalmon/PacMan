@@ -1,6 +1,7 @@
 import pygame as pg
 from collections import deque
 from player import Player
+import random
 
 
 class Ghost:
@@ -103,7 +104,7 @@ class Ghost:
                 self.x -= self.speed * dt
             elif self.path[0] == "RIGHT":
                 self.x += self.speed * dt
-            
+
             if len(self.path) >= 2 and self.can_move(self.path[1], dt, self.__visu):
                 self.previous = self.path.pop(0)
             elif len(self.path) == 1:
@@ -129,38 +130,68 @@ class Ghost:
         center_x = int(check_x + self._scaled[0]/2)
         center_y = int(check_y + self._scaled[1]/2)
 
-        grid_x1, grid_y1 = int((center_x) / 32), int(center_y / 32)
-        grid_x2, grid_y2 = int((center_x + 30) / 32), int(center_y / 32)
-        grid_x3, grid_y3 = int((center_x)/ 32), int((center_y + 30) / 32)
+        grid_x1, grid_y1 = int((center_x) / 32), int((center_y) / 32)
+        grid_x2, grid_y2 = int((center_x + 30) / 32), int((center_y) / 32)
+        grid_x3, grid_y3 = int((center_x) / 32), int((center_y + 30) / 32)
         grid_x4, grid_y4 = int((center_x + 30) / 32), int((center_y + 30) / 32)
         return (visu[grid_y1][grid_x1] == " " and
                 visu[grid_y2][grid_x2] == " " and
                 visu[grid_y3][grid_x3] == " " and
                 visu[grid_y4][grid_x4] == " ")
 
-    def snap_to_grid(self, tile_size=32, threshold=2):
-        center_x = self.x + self._scaled[0] / 2
-        center_y = self.y + self._scaled[1] / 2
+    def go_to_random_dir(self, target_pos, visu):
+        direction = [
+            ("UP", -1, 0),
+            ("RIGHT", 0, 1),
+            ("DOWN", 1, 0),
+            ("LEFT", 0, -1)
+        ]
+        t_x = int((target_pos[1] + 12) // 32)
+        t_y = int((target_pos[0] + 12) // 32)
+        random.shuffle(direction)
+        for y, row in enumerate(visu):
+            for x, col in enumerate(row):
+                if (t_y, t_x) == (y, x):
+                    for name, dy, dx in direction:
+                        new_y = y + dy
+                        new_x = x + dx
+                        if 0 <= new_y < len(visu) and 0 <= new_x < len(row) and visu[new_y][new_x] != "█":
+                            return [name]
 
-        # centre de la case la plus proche
-        target_x = round(center_x / tile_size) * tile_size
-        target_y = round(center_y / tile_size) * tile_size
+    def get_inky_target(self, red_pos, pac_pos, pac_dir,  visu):
+        pac_x, pac_y = pac_pos
+        red_x, red_y = red_pos
+        pivot_x, pivot_y = (pac_x, pac_y)
+        if pac_dir:
+            if pac_dir[0] == "UP":
+                pivot_x, pivot_y = (pac_x, pac_y - 2)
+            elif pac_dir[0] == "RIGHT":
+                pivot_x, pivot_y = (pac_x + 2, pac_y)
+            elif pac_dir[0] == "DOWN":
+                pivot_x, pivot_y = (pac_x, pac_y + 2)
+            elif pac_dir[0] == "LEFT":
+                pivot_x, pivot_y = (pac_x - 2, pac_y)
+            vector = (pivot_x + (pivot_x - red_x), pivot_y + (pivot_y - red_y))
+            target_x = max(0, min(vector[0], len(visu[0]) - 1))
+            target_y = max(0, min(vector[1], len(visu) - 1))
+            while visu[target_y][target_x] == "█":
+                if target_x > pac_x:
+                    target_x -= 1
+                elif target_x < pac_x:
+                    target_x += 1
+                if visu[target_y][target_x] != "█":
+                    break
+                if target_y > pac_y:
+                    target_y -= 1
+                elif target_y < pac_y:
+                    target_y += 1
 
-        # snap uniquement si proche du centre
-        if abs(center_x - target_x) < threshold:
-            center_x = target_x
-        if abs(center_y - target_y) < threshold:
-            center_y = target_y
-
-        # remettre en coords sprite (top-left)
-        self.x = center_x - self._scaled[0] / 2
-        self.y = center_y - self._scaled[1] / 2
-        
-
+        return (target_x, target_y)
 
 def draw_ghosts(screen, ghosts):
     for _, value in ghosts.items():
         screen.blit(value.sprite, (value.x, value.y))
+        pg.draw.rect(screen, (0, 255, 0), (value.x + value._scaled[0]/2, value.y + value._scaled[1]/2, 30, 30), 1)
 
 
 def move_all_ghosts(ghosts, dt):
