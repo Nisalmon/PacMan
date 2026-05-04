@@ -5,7 +5,7 @@ import os
 from player import Player
 from pacgums import load_pacgums, draw_pacgums
 from maze_visu import draw_maze, build_maze_visu
-from ghost import Ghost, draw_ghosts, move_all_ghosts
+from ghost import Ghost, draw_ghosts, move_all_ghosts, init_ghosts
 
 
 TILE_SIZE = 32
@@ -48,25 +48,13 @@ def load_pygame(size):
     return screen_conf
 
 
-def debug_print_visu(player, visu):
-    os.system("clear")
-    for i in range(len(visu)):
-        for j in range(len(visu[0])):
-            if (i == int((player.y + 23) / 32) and
-               j == int((player.x + 23) / 32)):
-                print("P", end="")
-            else:
-                print(visu[i][j], end="")
-        print()
-
-
 def main():
     os.system("clear")
     conf = load_config()
     size = (conf['width'], conf['height'])
     screen_conf = load_pygame(size)
     screen = screen_conf["screen"]
-    pacman = Player(size[0] * 32 - 12, size[1] * 32 - 12, "sprite/Pacman.png")
+    pacman = Player((size[0]) * 32 - 12, (size[1]) * 32 - 12, "sprite/Pacman.png")
     running = True
     mazegen = MazeGenerator(size=size, seed=conf['seed'])
     mazegen.generate()
@@ -94,16 +82,12 @@ def main():
         "four_wall": four_wall_sprite,
         "triple_wall": Triple_wall_sprite
     }
-    ghosts = {
-        "blinky": Ghost("blinky", visu, 20, 20, pacman)
-    }
-    ghosts['blinky'].set_algo((int((pacman.x + 12) // 32), int((pacman.y + 12) // 32)))
+    ghosts = init_ghosts(conf, visu, pacman, convert_maze(mazegen.maze))
     pacgums = []
     if (load_pacgums(pacgums, conf['pacgums'],
                      convert_maze(mazegen.maze), visu)) == 0:
         return
     while running:
-        print(ghosts['blinky'].path)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
@@ -115,13 +99,17 @@ def main():
         pg.display.set_caption(f"Score: {pacman.score}. " +
                                f"Coords: {int((pacman.x + pacman._scaled[0]/2) // 32)}/{int((pacman.y + pacman._scaled[1]/2) // 32)}")
         screen_conf['screen'].blit(pacman.sprite, (pacman.x, pacman.y))
-        pg.draw.rect(screen, (0, 255, 0), (pacman.x + pacman._scaled[0]/2, pacman.y + pacman._scaled[1]/2, 30, 30), 1)
+        pg.draw.rect(screen, (0, 255, 0), (pacman.x - 2, pacman.y - 2, 28, 28), 1)
         pacman.move_player(dt * 2, visu)
         move_all_ghosts(ghosts, dt * 2)
         draw_ghosts(screen, ghosts)
-        for i in range(size[1] * 2 + 1):
-            for j in range(size[0] * 2 + 1):
-                pg.draw.rect(screen, (255, 0, 0), (j*32, i*32, 32, 32), 1)
+
+        # Corridors suposed collisions
+        # for i in range(size[1] * 2 + 1):
+        #     for j in range(size[0] * 2 + 1):
+        #         if visu[i][j] == " ":
+        #             pg.draw.rect(screen, (0, 255, 0), (j*32 - 16, i*32 - 16, 32, 32), 1)
+
         pg.display.update()
 
 

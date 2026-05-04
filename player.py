@@ -77,21 +77,22 @@ class Player:
         base_sprite = self.get_sprite((0, self.sprite_index))
         if self.can_move(dir, dt, visu) and dir2 is False:
             if len(self.direction) > 0:
-                if self.direction[0] == "LEFT":
-                    self.sprite = pg.transform.rotate(base_sprite, 180)
-                    self.x -= self.speed * dt
+                if self.can_move(self.direction[0], dt, visu):
+                    if self.direction[0] == "LEFT":
+                        self.sprite = pg.transform.rotate(base_sprite, 180)
+                        self.x -= self.speed * dt
 
-                elif self.direction[0] == "RIGHT":
-                    self.sprite = pg.transform.rotate(base_sprite, 0)
-                    self.x += self.speed * dt
+                    elif self.direction[0] == "RIGHT":
+                        self.sprite = pg.transform.rotate(base_sprite, 0)
+                        self.x += self.speed * dt
 
-                elif self.direction[0] == "UP":
-                    self.sprite = pg.transform.rotate(base_sprite, 90)
-                    self.y -= self.speed * dt
+                    elif self.direction[0] == "UP":
+                        self.sprite = pg.transform.rotate(base_sprite, 90)
+                        self.y -= self.speed * dt
 
-                elif self.direction[0] == "DOWN":
-                    self.sprite = pg.transform.rotate(base_sprite, 270)
-                    self.y += self.speed * dt
+                    elif self.direction[0] == "DOWN":
+                        self.sprite = pg.transform.rotate(base_sprite, 270)
+                        self.y += self.speed * dt
         else:
             if len(self.direction) == 2:
                 self.direction.pop(0)
@@ -104,39 +105,58 @@ class Player:
                 pacgums.pop(pacgums.index(gum))
 
     def can_move(self, dir, dt, visu) -> bool:
-        check_x = self.x
-        check_y = self.y
+        check_x = round(self.x)
+        check_y = round(self.y)
 
+        if dir == "":
+            return False
         if dir == "LEFT":
-            check_x -= self.speed * dt
+            check_x -= self.speed * dt + 1
         elif dir == "RIGHT":
-            check_x += self.speed * dt
+            check_x += self.speed * dt + 1
         elif dir == "UP":
-            check_y -= self.speed * dt
+            check_y -= self.speed * dt + 1
         elif dir == "DOWN":
-            check_y += self.speed * dt
+            check_y += self.speed * dt + 1
 
-        center_x = check_x + self._scaled[0]/2
-        center_y = check_y + self._scaled[1]/2
+        center_x = round(check_x + self._scaled[0]//2)
+        center_y = round(check_y + self._scaled[1]//2)
         grid_x1, grid_y1 = int((center_x)/32), int((center_y)/32)
-        grid_x2, grid_y2 = int((center_x + 30)/32), int((center_y)/32)
-        grid_x3, grid_y3 = int((center_x)/32), int((center_y + 30)/32)
-        grid_x4, grid_y4 = int((center_x + 30)/32), int((center_y + 30)/32)
+        grid_x2, grid_y2 = int((center_x + 29)/32), int((center_y)/32)
+        grid_x3, grid_y3 = int((center_x)/32), int((center_y + 29)/32)
+        grid_x4, grid_y4 = int((center_x + 29)/32), int((center_y + 29)/32)
         return (visu[grid_y1][grid_x1] == " " and
                 visu[grid_y2][grid_x2] == " " and
                 visu[grid_y3][grid_x3] == " " and
                 visu[grid_y4][grid_x4] == " ")
 
     def valid_move(self, dir, visu):
-        check_x = int((self.x - 12) // 32)
-        check_y = int((self.y - 12) // 32)
+        points = [
+            (self.x - 18) / 32 + 1,
+            (self.y - 18) / 32 + 1,
+            (self.x + 43) / 32,
+            (self.y + 43) / 32,
+        ]
+        check_x = int(points[0])
+        check_y = int(points[1])
+        check_x2 = int(points[2])
+        check_y2 = int(points[3])
+
         if dir == "LEFT":
             check_x -= 1
+            return (visu[check_y][check_x] == " " and
+                    visu[check_y2][check_x] == " ")
         elif dir == "RIGHT":
             check_x += 1
+            return (visu[check_y][check_x2] == " " and
+                    visu[check_y2][check_x2] == " ")
         elif dir == "UP":
             check_y -= 1
+            return (visu[check_y][check_x] == " " and
+                    visu[check_y][check_x2] == " ")
         elif dir == "DOWN":
             check_y += 1
-
-        return (visu[check_y][check_x] == " ")
+            return (visu[check_y2][check_x] == " " and
+                    visu[check_y2][check_x2] == " ")
+        else:
+            return False

@@ -13,8 +13,8 @@ def build_maze_visu(maze):
 
 
 def break_walls(visu, maze):
-    for i in range(len(maze)):
-        for j in range(len(maze[0])):
+    for i in range(len(maze[0])):
+        for j in range(len(maze)):
             if maze[j][i] == '1':
                 visu[j * 2 + 1][i * 2] = " "
                 visu[j * 2 + 2][i * 2 + 1] = " "
