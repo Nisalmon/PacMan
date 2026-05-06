@@ -78,8 +78,8 @@ def load_walls():
 
 
 def print_score(score, screen, size):
-    loc1 = (size[0] * 32 * 2 + 20, 0)
-    loc2 = (size[0] * 32 * 2 + 20, 24)
+    loc1 = (size[0] * 32 * 2 + 20, 12)
+    loc2 = (size[0] * 32 * 2 + 20, 36)
     screen['font'].render_to(screen['screen'], loc1, "SCORE:", (255, 255, 255))
     screen['font'].render_to(screen['screen'], loc2, f"{score}", (255, 255, 255))
 
@@ -90,6 +90,14 @@ def print_life(sprite, lives, screen, size):
     screen['font'].render_to(screen['screen'], loc1, "Lives:", (255, 255, 255))
     for i in range(0, lives):
         screen['screen'].blit(sprite, (loc2[0] + i * 24, loc2[1]))
+
+
+def print_timer(time, screen, size):
+    loc1 = (size[0] * 32 * 2 + 20, 180)
+    loc2 = (size[0] * 32 * 2 + 20, 204)
+    screen['font'].render_to(screen['screen'], loc1, "Time:", (255, 255, 255))
+    screen['font'].render_to(screen['screen'], loc2, f"{time}", (255, 255, 255))
+
 
 
 def print_all():
@@ -121,13 +129,14 @@ def main():
     if (load_pacgums(pacgums, conf['pacgums'],
                      convert_maze(mazegen.maze), visu)) == 0:
         return
+    timer = time.time()
     while running:
-        if pacman.just_respawned is True:
-            st = time.time()
-            while time.time() - st < 3:
-                continue
-            pacman.just_respawned = False
-            pacman.alive = True
+        n_timer = time.time()
+        if time.time() - timer >= 1:
+            timer = n_timer
+            conf['level_max_time'] -= 1
+        if not pacman.alive:
+            print("A")
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
@@ -136,6 +145,7 @@ def main():
 
         print_score(pacman.score, screen_conf, size)
         print_life(pacman.get_sprite((0, 3)), pacman.lives, screen_conf, size)
+        print_timer(conf['level_max_time'], screen_conf, size)
 
         draw_maze(screen, mazegen.maze, walls)
         draw_pacgums(pacgums, screen)
@@ -147,10 +157,17 @@ def main():
 
         # Supposed player collisions
         # pg.draw.rect(screen, (0, 255, 0), (pacman.x - 2, pacman.y - 2, 28, 28), 1)
+
         if pacman.alive is True:
             pacman.move_player(dt * 2, visu)
             move_all_ghosts(ghosts, dt * 2)
         draw_ghosts(screen, ghosts)
+        if pacman.just_respawned is True:
+            st = time.time()
+            while time.time() - st < 3:
+                continue
+            pacman.just_respawned = False
+            pacman.alive = True
         if pacman.alive is False:
             respawn(pacman, ghosts, spawn_loc, conf, visu, convert_maze(mazegen.maze))
             pacman.just_respawned = True
