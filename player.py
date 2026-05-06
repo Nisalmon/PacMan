@@ -21,6 +21,9 @@ class Player:
         self.__anim_speed = 0.08
         self.score = 0
         self.direction = []
+        self.lives = 3
+        self.alive = True
+        self.just_respawned = False
 
     def get_sprite(self, loc, colorkey=(255, 255, 255)):
         x = loc[1] * self._sprite_size[0]
@@ -130,33 +133,11 @@ class Player:
                 visu[grid_y3][grid_x3] == " " and
                 visu[grid_y4][grid_x4] == " ")
 
-    def valid_move(self, dir, visu):
-        points = [
-            (self.x - 18) / 32 + 1,
-            (self.y - 18) / 32 + 1,
-            (self.x + 43) / 32,
-            (self.y + 43) / 32,
-        ]
-        check_x = int(points[0])
-        check_y = int(points[1])
-        check_x2 = int(points[2])
-        check_y2 = int(points[3])
-
-        if dir == "LEFT":
-            check_x -= 1
-            return (visu[check_y][check_x] == " " and
-                    visu[check_y2][check_x] == " ")
-        elif dir == "RIGHT":
-            check_x += 1
-            return (visu[check_y][check_x2] == " " and
-                    visu[check_y2][check_x2] == " ")
-        elif dir == "UP":
-            check_y -= 1
-            return (visu[check_y][check_x] == " " and
-                    visu[check_y][check_x2] == " ")
-        elif dir == "DOWN":
-            check_y += 1
-            return (visu[check_y2][check_x] == " " and
-                    visu[check_y2][check_x2] == " ")
-        else:
-            return False
+    def touch_ghost(self, ghosts):
+        for name, value in ghosts.items():
+            if (abs(self.x - value.x) < 15 and
+               abs(self.y - value.y) < 15):
+                self.lives -= 1
+                self.alive = False
+                if self.lives <= 0:
+                    self.lives = 0

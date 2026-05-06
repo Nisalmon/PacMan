@@ -64,10 +64,11 @@ class Ghost:
                                                                target, self.target.direction[0] if self.target.direction else "",
                                                                self.__visu))
         else:
-            if len(self.algo_blinky(target)) <= 8:
+            if len(self.algo_blinky(target)) <= 8 or self.path:
                 self.path = self.algo_blinky(self.rand_target)
             else:
                 self.path = self.algo_blinky(target)
+                self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
 
     def algo_blinky(self, target):
         queue = deque()
@@ -97,8 +98,6 @@ class Ghost:
                 width = len(self.__visu[0])
                 if nx < 0 or nx >= width or ny < 0 or ny >= height:
                     continue
-                # if self.__visu[y][x] == "█":
-                #     continue
                 if self.__visu[ny][nx] == "█":
                     continue
                 if (nx, ny) in visited:
@@ -136,13 +135,7 @@ class Ghost:
                 self.x -= self.speed * dt
             elif self.previous == "RIGHT":
                 self.x += self.speed * dt
-            if self.frame % 15 == 0 and self.__name == "clyde":
-                print("A")
-                print(self.path)
         elif self.path and self.can_move(self.path[0], dt, self.__visu):
-            if self.frame % 15 == 0 and self.__name == "clyde":
-                print(self.path)
-                print("B")
             if self.path[0] == "UP":
                 self.y -= self.speed * dt
             elif self.path[0] == "DOWN":
@@ -158,10 +151,6 @@ class Ghost:
                 self.previous = self.path.pop(0)
         else:
             self.set_algo(target)
-            # if self.frame % 15 == 0 and self.__name == "inky":
-            #     print("C")
-            #     print(self.red.x, self.red.y)
-            #     print(self.path)
         # if not self.path:
         #     self.set_algo(target)
         # elif self.frame % 10 == 0:
@@ -272,7 +261,6 @@ class Ghost:
                maze_hexa[int((y - 1) / 2)][int((x - 1) / 2)] == "F"):
                 continue
             if visu[y][x] == " ":
-                print(x, y)
                 return (x, y)
 
 
@@ -282,16 +270,18 @@ def init_ghosts(conf, visu, pacman, maze_hexa) -> Dict[str, Ghost]:
     ghosts = {
         "blinky": Ghost("blinky", visu, maze_hexa, 20, 20, pacman, None),
         "clyde": Ghost("clyde", visu, maze_hexa, 20, (h - 1) * 64 + 20, pacman, None),
+        "pinky": Ghost("pinky", visu, maze_hexa, (w - 1) * 64 + 20, (h - 1) * 64 + 20, pacman, None)
     }
     ghosts.update({"inky": Ghost("inky", visu, maze_hexa, (w - 1) * 64 + 20, 20, pacman, ghosts['blinky'])})
-    ghosts.update({"pinky": Ghost("pinky", visu, maze_hexa, (w - 1) * 64 + 20, (h - 1) * 64 + 20, pacman, ghosts['blinky'])})
     return ghosts
 
 
 def draw_ghosts(screen, ghosts) -> None:
     for _, value in ghosts.items():
         screen.blit(value.sprite, (value.x, value.y))
-        pg.draw.rect(screen, (0, 255, 0), (value.x + value._scaled[0]/2, value.y + value._scaled[1]/2, 30, 30), 1)
+
+        # Supposed ghosts collisions
+        # pg.draw.rect(screen, (0, 255, 0), (value.x + value._scaled[0]/2, value.y + value._scaled[1]/2, 30, 30), 1)
 
 
 def move_all_ghosts(ghosts, dt) -> None:
