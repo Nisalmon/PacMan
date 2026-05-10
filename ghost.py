@@ -6,29 +6,37 @@ from typing import Dict, List, Optional, Union, Tuple
 
 
 class Ghost:
-    def __init__(self, name, visu, maze_hexa, x, y, target, red):
+    def __init__(self, name, score, visu, maze_hexa, x, y, target, red):
         self.__name = name
+        self.score = score
         self.x = x
         self.y = y
+        self.state = "chase"
+        self.edible = False
         self._sprite_size = (32, 32)
         self._scaled = (24, 24)
         self._sheet = self.load_sprite_sheet()
         self.sprite = self.get_sprite((0, 0))
+        self.spawn = ((x // 32 + 1), (y // 32 + 1))
         self.path = []
         self.previous = ""
         self.__visu = visu
         self.__maze_hexa = maze_hexa
         self.target: Player = target
         self.speed = 56
-        if self.__name == "inky" or self.__name == "pinky":
+        if self.__name == "inky":
             self.red = red
-
+        self.anim_timer = 0
+        self.anim_speed = 0.08
+        self.sprite_increment = 1
+        self.sprite_index = 0
         self.target_pos = None
         self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
-        self.frame = 0
 
     def load_sprite_sheet(self):
-        if self.__name == "blinky":
+        if self.state == "afraid":
+            return pg.image.load("./sprite/afraid.png").convert_alpha()
+        elif self.__name == "blinky":
             return pg.image.load("./sprite/blinky.png").convert_alpha()
         elif self.__name == "inky":
             return pg.image.load("./sprite/inky.png").convert_alpha()
@@ -40,6 +48,8 @@ class Ghost:
     def get_sprite(self, loc, colorkey=(255, 255, 255)):
         x = loc[1] * self._sprite_size[0]
         y = loc[0] * self._sprite_size[1]
+        if self.state == "afraid":
+            y = 0
 
         rect = pg.Rect(x, y, *self._sprite_size)
         img = pg.Surface(self._sprite_size, pg.SRCALPHA).convert_alpha()
@@ -52,23 +62,38 @@ class Ghost:
                                         self._scaled[1]))
 
     def set_algo(self, target):
-        self.target_pos = target
-        if self.__name == "blinky":
-            self.path = self.algo_blinky(target)
-        elif self.__name == "pinky":
-            self.path = self.algo_blinky(self.get_pinky_target(target, self.target.direction[0] if self.target.direction else "",
-                                                               self.__visu))
-        elif self.__name == "inky":
-            self.path = self.algo_blinky(self.get_inky_target((int((self.red.x + self._scaled[0]/2) // 32),
-                                                               int((self.red.y + self._scaled[1]/2) // 32)),
-                                                               target, self.target.direction[0] if self.target.direction else "",
-                                                               self.__visu))
-        else:
-            if len(self.algo_blinky(target)) <= 8 or self.path:
-                self.path = self.algo_blinky(self.rand_target)
-            else:
+        if self.state == "chase":
+            self.target_pos = target
+            if self.__name == "blinky":
                 self.path = self.algo_blinky(target)
                 self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
+            elif self.__name == "pinky":
+                self.path = self.algo_blinky(self.get_pinky_target(target, self.target.direction[0] if self.target.direction else "",
+                                                                self.__visu))
+                self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
+            elif self.__name == "inky":
+                self.path = self.algo_blinky(self.get_inky_target((int((self.red.x + self._scaled[0]/2) // 32),
+                                                                int((self.red.y + self._scaled[1]/2) // 32)),
+                                                                target, self.target.direction[0] if self.target.direction else "",
+                                                                self.__visu))
+                self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
+            else:
+                if len(self.algo_blinky(target)) <= 8 or self.path:
+                    self.path = self.algo_blinky(self.rand_target)
+                else:
+                    self.path = self.algo_blinky(target)
+                    self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
+        elif self.state == "afraid":
+            if len(self.path) == 0:
+                self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
+            self.path = self.algo_blinky(self.rand_target)
+        elif self.state == "dead":
+            self.path = self.algo_blinky(self.spawn)
+            if len(self.path) == 0:
+                self.state = "chase"
+                self.edible = False
+                self._sheet = self.load_sprite_sheet()
+                
 
     def algo_blinky(self, target):
         queue = deque()
@@ -122,27 +147,41 @@ class Ghost:
                     int((self.target.x + self._scaled[0] / 2) // 32),
                     int((self.target.y + self._scaled[1] / 2) // 32)
                 )
-        self.frame += 1
         direction = ["UP", "DOWN", "LEFT", "RIGHT"]
+        self.anim_timer += dt
+        if self.anim_timer >= self.anim_speed:
+            self.anim_timer -= self.anim_speed
+            self.sprite_index += self.sprite_increment
+            if self.sprite_index == 1 or self.sprite_index == 0:
+                self.sprite_increment *= -1
+
         if self.previous in direction and self.can_move(self.previous, dt, self.__visu) and not (self.path and self.can_move(self.path[0], dt, self.__visu)):
             if not set(self.path) == {self.previous}:
                 self.set_algo(target)
             if self.previous == "UP":
+                self.sprite = self.get_sprite((self.sprite_index, 2))
                 self.y -= self.speed * dt
             elif self.previous == "DOWN":
+                self.sprite = self.get_sprite((self.sprite_index, 1))
                 self.y += self.speed * dt
             elif self.previous == "LEFT":
+                self.sprite = self.get_sprite((self.sprite_index, 3))
                 self.x -= self.speed * dt
             elif self.previous == "RIGHT":
+                self.sprite = self.get_sprite((self.sprite_index, 0))
                 self.x += self.speed * dt
         elif self.path and self.can_move(self.path[0], dt, self.__visu):
             if self.path[0] == "UP":
+                self.sprite = self.get_sprite((self.sprite_index, 2))
                 self.y -= self.speed * dt
             elif self.path[0] == "DOWN":
+                self.sprite = self.get_sprite((self.sprite_index, 1))
                 self.y += self.speed * dt
             elif self.path[0] == "LEFT":
+                self.sprite = self.get_sprite((self.sprite_index, 3))
                 self.x -= self.speed * dt
             elif self.path[0] == "RIGHT":
+                self.sprite = self.get_sprite((self.sprite_index, 0))
                 self.x += self.speed * dt
 
             if len(self.path) >= 2 and self.can_move(self.path[0], dt, self.__visu):
@@ -151,10 +190,6 @@ class Ghost:
                 self.previous = self.path.pop(0)
         else:
             self.set_algo(target)
-        # if not self.path:
-        #     self.set_algo(target)
-        # elif self.frame % 10 == 0:
-        #     self.set_algo(target)
 
     def can_move(self, dir, dt, visu) -> bool:
         check_x = self.x
@@ -268,20 +303,12 @@ def init_ghosts(conf, visu, pacman, maze_hexa) -> Dict[str, Ghost]:
     w = conf['width']
     h = conf['height']
     ghosts = {
-        "blinky": Ghost("blinky", visu, maze_hexa, 20, 20, pacman, None),
-        "clyde": Ghost("clyde", visu, maze_hexa, 20, (h - 1) * 64 + 20, pacman, None),
-        "pinky": Ghost("pinky", visu, maze_hexa, (w - 1) * 64 + 20, (h - 1) * 64 + 20, pacman, None)
+        "blinky": Ghost("blinky", conf["points_per_ghost"], visu, maze_hexa, 20, 20, pacman, None),
+        "clyde": Ghost("clyde", conf["points_per_ghost"], visu, maze_hexa, 20, (h - 1) * 64 + 20, pacman, None),
+        "pinky": Ghost("pinky", conf["points_per_ghost"], visu, maze_hexa, (w - 1) * 64 + 20, (h - 1) * 64 + 20, pacman, None)
     }
-    ghosts.update({"inky": Ghost("inky", visu, maze_hexa, (w - 1) * 64 + 20, 20, pacman, ghosts['blinky'])})
+    ghosts.update({"inky": Ghost("inky", conf["points_per_ghost"], visu, maze_hexa, (w - 1) * 64 + 20, 20, pacman, ghosts['blinky'])})
     return ghosts
-
-
-def draw_ghosts(screen, ghosts) -> None:
-    for _, value in ghosts.items():
-        screen.blit(value.sprite, (value.x, value.y))
-
-        # Supposed ghosts collisions
-        # pg.draw.rect(screen, (0, 255, 0), (value.x + value._scaled[0]/2, value.y + value._scaled[1]/2, 30, 30), 1)
 
 
 def move_all_ghosts(ghosts, dt) -> None:

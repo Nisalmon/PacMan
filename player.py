@@ -100,12 +100,17 @@ class Player:
             if len(self.direction) == 2:
                 self.direction.pop(0)
 
-    def eat_pacgums(self, pacgums):
+    def eat_pacgums(self, pacgums, ghosts):
         for gum in pacgums:
             if (abs(self.x - gum.x) < 10 and
                abs(self.y - gum.y) < 10):
-                self.score += 10
+                self.score += gum.score
                 pacgums.pop(pacgums.index(gum))
+                if gum._type == "super":
+                    for _, gh in ghosts.items():
+                        gh.state = "afraid"
+                        gh.edible = True
+                        gh._sheet = gh.load_sprite_sheet()
 
     def can_move(self, dir, dt, visu) -> bool:
         check_x = round(self.x)
@@ -136,8 +141,21 @@ class Player:
     def touch_ghost(self, ghosts):
         for name, value in ghosts.items():
             if (abs(self.x - value.x) < 15 and
-               abs(self.y - value.y) < 15):
+               abs(self.y - value.y) < 15 and
+               value.edible is False):
                 self.lives -= 1
                 self.alive = False
                 if self.lives <= 0:
                     self.lives = 0
+            elif (abs(self.x - value.x) < 15 and
+               abs(self.y - value.y) < 15 and
+               value.edible is True and
+               value.state == "afraid"):
+                self.score += value.score
+                value.state = "dead"
+                value._sheet = value.load_sprite_sheet()
+
+
+
+def init_player(x, y, sprite) -> Player:
+    return Player(x, y, sprite)
