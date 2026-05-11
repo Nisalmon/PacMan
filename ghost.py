@@ -3,6 +3,10 @@ from collections import deque
 from player import Player
 import random
 from typing import Dict, List, Optional, Union, Tuple
+import time
+
+
+BASE_SPEED = 56
 
 
 class Ghost:
@@ -12,6 +16,7 @@ class Ghost:
         self.x = x
         self.y = y
         self.state = "chase"
+        self.afraid_timer = None
         self.edible = False
         self._sprite_size = (32, 32)
         self._scaled = (24, 24)
@@ -23,7 +28,7 @@ class Ghost:
         self.__visu = visu
         self.__maze_hexa = maze_hexa
         self.target: Player = target
-        self.speed = 56
+        self.speed = BASE_SPEED
         if self.__name == "inky":
             self.red = red
         self.anim_timer = 0
@@ -36,6 +41,8 @@ class Ghost:
     def load_sprite_sheet(self):
         if self.state == "afraid":
             return pg.image.load("./sprite/afraid.png").convert_alpha()
+        elif self.state == "dead":
+            return pg.image.load("./sprite/dead.png").convert_alpha()
         elif self.__name == "blinky":
             return pg.image.load("./sprite/blinky.png").convert_alpha()
         elif self.__name == "inky":
@@ -66,7 +73,8 @@ class Ghost:
             self.target_pos = target
             if self.__name == "blinky":
                 self.path = self.algo_blinky(target)
-                self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
+                self.rand_target = self.get_rand_target(self.__maze_hexa,
+                                                        self.__visu)
             elif self.__name == "pinky":
                 self.path = self.algo_blinky(self.get_pinky_target(target, self.target.direction[0] if self.target.direction else "",
                                                                 self.__visu))
@@ -84,6 +92,10 @@ class Ghost:
                     self.path = self.algo_blinky(target)
                     self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
         elif self.state == "afraid":
+            if time.time() - self.afraid_timer >= 10:
+                self.state = "chase"
+                self.edible = False
+                self._sheet = self.load_sprite_sheet()
             if len(self.path) == 0:
                 self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
             self.path = self.algo_blinky(self.rand_target)
@@ -93,7 +105,6 @@ class Ghost:
                 self.state = "chase"
                 self.edible = False
                 self._sheet = self.load_sprite_sheet()
-                
 
     def algo_blinky(self, target):
         queue = deque()

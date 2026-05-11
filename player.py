@@ -1,4 +1,5 @@
 import pygame as pg
+import time
 
 
 TILE_SIZE = 32
@@ -7,7 +8,7 @@ HALF_PLAYER = 24 // 2
 
 
 class Player:
-    def __init__(self, x, y, sprite_loc):
+    def __init__(self, x, y, sprite_loc, lives):
         self.x = x
         self.y = y
         self._sheet = pg.image.load(sprite_loc).convert_alpha()
@@ -21,7 +22,7 @@ class Player:
         self.__anim_speed = 0.08
         self.score = 0
         self.direction = []
-        self.lives = 3
+        self.lives = lives
         self.alive = True
         self.just_respawned = False
 
@@ -109,6 +110,7 @@ class Player:
                 if gum._type == "super":
                     for _, gh in ghosts.items():
                         gh.state = "afraid"
+                        gh.afraid_timer = time.time()
                         gh.edible = True
                         gh._sheet = gh.load_sprite_sheet()
 
@@ -148,14 +150,13 @@ class Player:
                 if self.lives <= 0:
                     self.lives = 0
             elif (abs(self.x - value.x) < 15 and
-               abs(self.y - value.y) < 15 and
-               value.edible is True and
-               value.state == "afraid"):
+                  abs(self.y - value.y) < 15 and
+                  value.edible is True and
+                  value.state == "afraid"):
                 self.score += value.score
                 value.state = "dead"
                 value._sheet = value.load_sprite_sheet()
 
 
-
-def init_player(x, y, sprite) -> Player:
-    return Player(x, y, sprite)
+def init_player(x, y, sprite, lives) -> Player:
+    return Player(x, y, sprite, lives)

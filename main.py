@@ -10,6 +10,7 @@ from ghost import Ghost, move_all_ghosts, init_ghosts
 from game_end import time_out, game_over
 from environment import draw_env
 from buttons import init_buttons, draw_button
+from scorers import load_scorers, fill_scorers
 import time
 
 
@@ -80,6 +81,18 @@ def load_walls():
     return walls
 
 
+def get_leaderboard(screen, scorers, size):
+    loc = (size[0] // 2, size[1] // 2)
+    txt = "Highscores:"
+    screen['font'].render_to(screen['screen'], (loc[0] - len(txt)*10, loc[1] + 72), f"{txt}", (255, 255, 255))
+    cnt = 1
+    for name, value in scorers.items():
+        if cnt > 5:
+            break
+        screen['font'].render_to(screen['screen'], (loc[0] - len(txt) * 15, loc[1] + 72 + 30*cnt), f"{cnt}. {name}: {value}", (255, 255, 255))
+        cnt += 1
+
+
 def print_score(score, screen, size):
     loc1 = (size[0] * 32 * 2 + 20, 12)
     loc2 = (size[0] * 32 * 2 + 20, 36)
@@ -111,6 +124,20 @@ def print_countdown(screen, value, size) -> None:
     screen['font'].render_to(screen['screen'], loc, f"{value}", (255, 255, 255))
 
 
+def end_game_print(screen, score, size):
+    loc1 = (size[0] // 2 - 116, size[1] // 2 - 48)
+    loc2 = (size[0] // 2, size[1] // 2)
+    screen['font'].render_to(screen['screen'], loc1, "Final Score:", (255, 255, 255))
+    screen['font'].render_to(screen['screen'], loc2, f"{score}", (255, 255, 255))
+
+
+def get_username(screen, username, size):
+    loc1 = (size[0] // 2 - 116, size[1] // 2 + 48)
+    loc2 = (size[0] // 2, size[1] // 2 + 80)
+    screen['font'].render_to(screen['screen'], loc1, "Enter Name:", (255, 255, 255))
+    screen['font'].render_to(screen['screen'], loc2, f"{username}", (255, 255, 255))
+
+
 def respawn(player, ghosts, loc, conf, visu, maze_hexa):
     player.x, player.y = loc
     player.direction = []
@@ -126,7 +153,7 @@ def main():
     screen_conf = load_pygame(size)
     screen = screen_conf["screen"]
     spawn_loc = ((size[0] + size[0] % 2 - 1) * 32 - 12, (size[1] + size[1] % 2 - 1) * 32 - 12)
-    pacman = init_player(spawn_loc[0], spawn_loc[1], "sprite/Pacman.png")
+    pacman = init_player(spawn_loc[0], spawn_loc[1], "sprite/Pacman.png", conf['lives'])
     running = True
     mazegen = MazeGenerator(size=size, seed=conf['seed'])
     mazegen.generate(mazegen._seed)
@@ -134,6 +161,7 @@ def main():
     hex_maze = convert_maze(mazegen.maze)
     walls = load_walls()
     ghosts = init_ghosts(conf, visu, pacman, hex_maze)
+    scorers = load_scorers(conf['highscore_filename'])
     pacgums = []
     if (load_pacgums(pacgums, conf['pacgums'],
                      hex_maze, visu, conf)) == 0:
@@ -144,6 +172,9 @@ def main():
     respawn_timer = None
     over = False
     state = "menu"
+    win = False
+    usr_name = ''
+    end_usr = False
     pg.display.set_caption("PACMAN")
     while running:
         keys = pg.key.get_pressed()
@@ -151,12 +182,19 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
+            elif event.type == pg.KEYDOWN and state == "score":
+                keys = pg.key.get_pressed()
+                if keys[pg.K_RETURN] or len(usr_name) == 10:
+                    end_usr = True
+                else:
+                    usr_name += event.unicode
         dt = screen_conf['clock'].tick(60) / 1000
         if state == "menu":
             screen.fill((0, 0, 0))
             draw_button(buttons['main'], screen_conf, size)
             if buttons["main"].clicked() is True:
                 state = "game"
+            get_leaderboard(screen_conf, scorers, win_size)
         elif state == "game":
             if over is False:
                 screen.fill((0, 0, 0))
@@ -166,14 +204,12 @@ def main():
                     lvl_timer -= 1
                 draw_env(screen, mazegen.maze, walls, pacgums, ghosts, pacman)
                 print_score(pacman.score, screen_conf, size)
-                print_life(pacman.get_sprite((0, 3)), pacman.lives, screen_conf, size)
+                print_life(pacman.get_sprite((0, 3)),
+                           pacman.lives, screen_conf, size)
                 print_timer(lvl_timer, screen_conf, size)
 
                 pacman.eat_pacgums(pacgums, ghosts)
                 pacman.touch_ghost(ghosts)
-
-                # Supposed player collisions
-                # pg.draw.rect(screen, (0, 255, 0), (pacman.x - 2, pacman.y - 2, 28, 28), 1)
 
                 if pacman.alive is True:
                     pacman.move_player(dt * 2, visu)
@@ -183,7 +219,9 @@ def main():
                         pacman.just_respawned = False
                         pacman.alive = True
                     else:
-                        print_countdown(screen_conf, (3 - int(time.time() - respawn_timer)), win_size)
+                        print_countdown(screen_conf,
+                                        (3 - int(time.time() - respawn_timer)),
+                                        win_size)
                 if pacman.alive is False:
                     respawn(pacman, ghosts, spawn_loc, conf, visu, hex_maze)
                     pacman.just_respawned = True
@@ -195,28 +233,32 @@ def main():
                 if nb_gums == 0:
                     game_over(screen_conf, win_size)
                     over = True
+                    win = True
             else:
                 if keys[pg.K_SPACE]:
-                    state = "menu"
-                    mazegen.generate(mazegen._seed)
+                    state = "score" if not win else "game"
+                    mazegen.generate()
                     visu = build_maze_visu(convert_maze(mazegen.maze))
                     hex_maze = convert_maze(mazegen.maze)
                     lvl_timer = conf["level_max_time"]
-                    pacman = init_player(spawn_loc[0], spawn_loc[1], "sprite/Pacman.png")
-                    ghosts = init_ghosts(conf, visu, pacman, hex_maze)
+                    pacman.lives = conf["lives"]
+                    pacman.score = 0
+                    respawn(pacman, ghosts, spawn_loc, conf, visu, hex_maze)
                     pacgums = []
                     if (load_pacgums(pacgums, conf['pacgums'],
-                                    hex_maze, visu, conf)) == 0:
+                                     hex_maze, visu, conf)) == 0:
                         break
                     over = False
         elif state == "score":
-            pass
-
-        # Corridors suposed collisions
-        # for i in range(size[1] * 2 + 1):
-        #     for j in range(size[0] * 2 + 1):
-        #         if visu[i][j] == " ":
-        #             pg.draw.rect(screen, (0, 255, 0), (j*32 - 16, i*32 - 16, 32, 32), 1)
+            screen.fill((0, 0, 0))
+            end_game_print(screen_conf, pacman.score, win_size)
+            get_username(screen_conf, usr_name, win_size)
+            if end_usr is True:
+                user = {usr_name: pacman.score}
+                fill_scorers(scorers, user, conf['highscore_filename'])
+                state = "menu"
+                end_usr = False
+                usr_name = ''
 
         pg.display.update()
 
