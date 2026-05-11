@@ -187,7 +187,8 @@ def main():
                 if keys[pg.K_RETURN] or len(usr_name) == 10:
                     end_usr = True
                 else:
-                    usr_name += event.unicode
+                    if event.unicode.isalpha() or event.unicode.isspace():
+                        usr_name += event.unicode
         dt = screen_conf['clock'].tick(60) / 1000
         if state == "menu":
             screen.fill((0, 0, 0))
@@ -237,12 +238,12 @@ def main():
             else:
                 if keys[pg.K_SPACE]:
                     state = "score" if not win else "game"
+                    win = False
                     mazegen.generate()
                     visu = build_maze_visu(convert_maze(mazegen.maze))
                     hex_maze = convert_maze(mazegen.maze)
                     lvl_timer = conf["level_max_time"]
                     pacman.lives = conf["lives"]
-                    pacman.score = 0
                     respawn(pacman, ghosts, spawn_loc, conf, visu, hex_maze)
                     pacgums = []
                     if (load_pacgums(pacgums, conf['pacgums'],
@@ -259,6 +260,7 @@ def main():
                 state = "menu"
                 end_usr = False
                 usr_name = ''
+                pacman.score = 0
 
         pg.display.update()
 
