@@ -4,7 +4,7 @@ import pygame as pg
 TILE_SIZE = 32
 
 
-def draw_maze(screen, visu, walls):
+def draw_maze(screen, visu, walls, scale):
     rotated_wall_90 = pg.transform.rotate(walls['wall'], 90)
     rotated_wall_180 = pg.transform.rotate(walls['wall'], 180)
     rotated_wall_270 = pg.transform.rotate(walls['wall'], 270)
@@ -18,9 +18,9 @@ def draw_maze(screen, visu, walls):
     rotated_triple_wall_180 = pg.transform.rotate(walls['triple_wall'], 180)
     rotated_triple_wall_270 = pg.transform.rotate(walls['triple_wall'], 270)
     for r_id, row in enumerate(visu):
-        for c_id, col in enumerate(row):
-            x = c_id * TILE_SIZE * 2
-            y = r_id * TILE_SIZE * 2
+        for c_id, _ in enumerate(row):
+            x = c_id * TILE_SIZE * scale[0]
+            y = r_id * TILE_SIZE * scale[1]
             cell = visu[r_id][c_id]
             has_N = bool(cell & 1)
             has_E = bool(cell & 2)
@@ -72,12 +72,9 @@ def draw_ghosts(screen, ghosts) -> None:
     for _, value in ghosts.items():
         screen.blit(value.sprite, (value.x, value.y))
 
-        # Supposed ghosts collisions
-        # pg.draw.rect(screen, (0, 255, 0), (value.x + value._scaled[0]/2, value.y + value._scaled[1]/2, 30, 30), 1)
 
-
-def draw_env(screen, visu, walls, pacgums, ghosts, player):
-    draw_maze(screen, visu, walls)
+def draw_env(screen, visu, walls, pacgums, ghosts, player, scale):
+    draw_maze(screen, visu, walls, scale)
     draw_pacgums(pacgums, screen)
     draw_ghosts(screen, ghosts)
     screen.blit(player.sprite, (player.x, player.y))

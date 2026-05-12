@@ -1,19 +1,21 @@
 import pygame as pg
 import time
+from typing import Tuple
 
 
 TILE_SIZE = 32
+PLAYER_SIZE = 24
 HALF_TILE = TILE_SIZE // 2
 HALF_PLAYER = 24 // 2
 
 
 class Player:
-    def __init__(self, x, y, sprite_loc, lives):
+    def __init__(self, x, y, sprite_loc, lives, scale):
         self.x = x
         self.y = y
         self._sheet = pg.image.load(sprite_loc).convert_alpha()
         self._sprite_size = (32, 32)
-        self._scaled = (24, 24)
+        self._scaled = self.get_scale(scale)
         self.sprite = self.get_sprite((0, 0))
         self.sprite_index = 0
         self.sprite_increment = 1
@@ -26,6 +28,11 @@ class Player:
         self.alive = True
         self.just_respawned = False
 
+    def get_scale(self, scale) -> Tuple[int, int]:
+        wall_size_x = 32 * scale
+        size = 31.25 * wall_size_x // 100 + 4
+        return (size, size)
+
     def get_sprite(self, loc, colorkey=(255, 255, 255)):
         x = loc[1] * self._sprite_size[0]
         y = loc[0] * self._sprite_size[1]
@@ -37,8 +44,7 @@ class Player:
             if colorkey == -1:
                 colorkey = img.get_at((0, 0))
             img.set_colorkey(colorkey, pg.RLEACCEL)
-        return pg.transform.scale(img, (self._scaled[0],
-                                        self._scaled[1]))
+        return pg.transform.scale(img, self._scaled)
 
     def move_player(self, dt, visu):
         keys = pg.key.get_pressed()
@@ -158,5 +164,5 @@ class Player:
                 value._sheet = value.load_sprite_sheet()
 
 
-def init_player(x, y, sprite, lives) -> Player:
-    return Player(x, y, sprite, lives)
+def init_player(x, y, sprite, lives, scale) -> Player:
+    return Player(x, y, sprite, lives, scale)

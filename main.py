@@ -12,9 +12,17 @@ from environment import draw_env
 from buttons import init_buttons, draw_button
 from scorers import load_scorers, fill_scorers
 import time
+from typing import Tuple, Dict, Union, Optional, List
 
 
 TILE_SIZE = 32
+
+
+def get_scale(maze_len, maze_size) -> Tuple[int, int]:
+    x = maze_size[0]/maze_len[0]/TILE_SIZE
+    y = maze_size[1]/maze_len[1]/TILE_SIZE
+    print(x, y)
+    return (x, y)
 
 
 def load_config():
@@ -48,28 +56,33 @@ def load_pygame(size):
     screen_conf = {}
     pg.init()
     pg.display.init()
-    screen_conf['screen'] = pg.display.set_mode((size[0] * TILE_SIZE * 2 + 300,
-                                                 size[1] * TILE_SIZE * 2))
+    screen_conf['screen'] = pg.display.set_mode((size[0],
+                                                 size[1]))
     screen_conf['clock'] = pg.time.Clock()
     screen_conf['font'] = pygame.freetype.Font("./font/PacmanFont.ttf", 24)
     return screen_conf
 
 
-def load_walls():
-    wall_sprite = pg.transform.scale2x(
-        pg.image.load("sprite/Wall.png").convert_alpha()
+def load_walls(scale):
+    wall_sprite = pg.transform.scale_by(
+        pg.image.load("sprite/Wall.png").convert_alpha(),
+        scale
         )
-    corner_wall_sprite = pg.transform.scale2x(
-        pg.image.load("sprite/Corner_wall.png").convert_alpha()
+    corner_wall_sprite = pg.transform.scale_by(
+        pg.image.load("sprite/Corner_wall.png").convert_alpha(),
+        scale
         )
-    incline_wall_sprite = pg.transform.scale2x(
-        pg.image.load("sprite/Incline_wall.png").convert_alpha()
+    incline_wall_sprite = pg.transform.scale_by(
+        pg.image.load("sprite/Incline_wall.png").convert_alpha(),
+        scale
         )
-    four_wall_sprite = pg.transform.scale2x(
-        pg.image.load("sprite/Four_wall.png").convert_alpha()
+    four_wall_sprite = pg.transform.scale_by(
+        pg.image.load("sprite/Four_wall.png").convert_alpha(),
+        scale
         )
-    Triple_wall_sprite = pg.transform.scale2x(
-        pg.image.load("sprite/Triple_wall.png").convert_alpha()
+    Triple_wall_sprite = pg.transform.scale_by(
+        pg.image.load("sprite/Triple_wall.png").convert_alpha(),
+        scale
         )
     walls = {
         "wall": wall_sprite,
@@ -82,35 +95,33 @@ def load_walls():
 
 
 def get_leaderboard(screen, scorers, size):
-    loc = (size[0] // 2, size[1] // 2)
+    loc = (size[0] // 2, size[1] - 3*size[1]//4)
     txt = "Highscores:"
     screen['font'].render_to(screen['screen'], (loc[0] - len(txt)*10, loc[1] + 72), f"{txt}", (255, 255, 255))
     cnt = 1
     for name, value in scorers.items():
-        if cnt > 5:
-            break
         screen['font'].render_to(screen['screen'], (loc[0] - len(txt) * 15, loc[1] + 72 + 30*cnt), f"{cnt}. {name}: {value}", (255, 255, 255))
         cnt += 1
 
 
 def print_score(score, screen, size):
-    loc1 = (size[0] * 32 * 2 + 20, 12)
-    loc2 = (size[0] * 32 * 2 + 20, 36)
+    loc1 = (size[0] + 20, 12)
+    loc2 = (size[0] + 20, 36)
     screen['font'].render_to(screen['screen'], loc1, "SCORE:", (255, 255, 255))
     screen['font'].render_to(screen['screen'], loc2, f"{score}", (255, 255, 255))
 
 
 def print_life(sprite, lives, screen, size):
-    loc1 = (size[0] * 32 * 2 + 20, 96)
-    loc2 = (size[0] * 32 * 2 + 20, 120)
+    loc1 = (size[0] + 20, 96)
+    loc2 = (size[0] + 20, 120)
     screen['font'].render_to(screen['screen'], loc1, "Lives:", (255, 255, 255))
     for i in range(0, lives):
         screen['screen'].blit(sprite, (loc2[0] + i * 24, loc2[1]))
 
 
 def print_timer(time, screen, size):
-    loc1 = (size[0] * 32 * 2 + 20, 180)
-    loc2 = (size[0] * 32 * 2 + 20, 204)
+    loc1 = (size[0] + 20, 180)
+    loc2 = (size[0] + 20, 204)
     screen['font'].render_to(screen['screen'], loc1, "Time:", (255, 255, 255))
     screen['font'].render_to(screen['screen'], loc2, f"{time}", (255, 255, 255))
 
@@ -149,19 +160,24 @@ def main():
     os.system("clear")
     conf = load_config()
     size = (conf['width'], conf['height'])
-    win_size = (size[0] * 32 * 2 + 300, size[1] * 32 * 2)
-    screen_conf = load_pygame(size)
+    win_size = (15 * TILE_SIZE * 2 + 300, 15 * TILE_SIZE * 2)
+    maze_size = (15 * TILE_SIZE * 2, 15 * TILE_SIZE * 2)
+    scale = get_scale(size, maze_size)
+    screen_conf = load_pygame(win_size)
     screen = screen_conf["screen"]
-    spawn_loc = ((size[0] + size[0] % 2 - 1) * 32 - 12, (size[1] + size[1] % 2 - 1) * 32 - 12)
-    pacman = init_player(spawn_loc[0], spawn_loc[1], "sprite/Pacman.png", conf['lives'])
+    spawn_loc = ((size[0] + size[0] % 2 - 1) * TILE_SIZE * scale[0] / 2 - 12,
+                 (size[1] + size[1] % 2 - 1) * TILE_SIZE * scale[1] / 2 - 12)
+    pacman = init_player(spawn_loc[0], spawn_loc[1], "sprite/Pacman.png", conf['lives'], scale[0])
     running = True
     mazegen = MazeGenerator(size=size, seed=conf['seed'])
     mazegen.generate(mazegen._seed)
     visu = build_maze_visu(convert_maze(mazegen.maze))
     hex_maze = convert_maze(mazegen.maze)
-    walls = load_walls()
-    ghosts = init_ghosts(conf, visu, pacman, hex_maze)
+    walls = load_walls(scale)
+    ghosts = init_ghosts(conf, visu, pacman, hex_maze, scale[0])
     scorers = load_scorers(conf['highscore_filename'])
+    if len(scorers) > 10:
+        raise Exception("There is an error with the highscore file.")
     pacgums = []
     if (load_pacgums(pacgums, conf['pacgums'],
                      hex_maze, visu, conf)) == 0:
@@ -187,15 +203,18 @@ def main():
                 if keys[pg.K_RETURN] or len(usr_name) == 10:
                     end_usr = True
                 else:
-                    if event.unicode.isalpha() or event.unicode.isspace():
+                    if event.unicode.isalnum() or event.unicode.isspace():
                         usr_name += event.unicode
+                    if keys[pg.K_BACKSPACE]:
+                        usr_name = usr_name[:-1]
         dt = screen_conf['clock'].tick(60) / 1000
         if state == "menu":
             screen.fill((0, 0, 0))
-            draw_button(buttons['main'], screen_conf, size)
+            draw_button(buttons, screen_conf, win_size)
             if buttons["main"].clicked() is True:
                 state = "game"
-            get_leaderboard(screen_conf, scorers, win_size)
+            if buttons["score"].clicked() is True:
+                state = "lead"
         elif state == "game":
             if over is False:
                 screen.fill((0, 0, 0))
@@ -203,11 +222,11 @@ def main():
                 if pacman.alive and time.time() - timer >= 1:
                     timer = n_timer
                     lvl_timer -= 1
-                draw_env(screen, mazegen.maze, walls, pacgums, ghosts, pacman)
-                print_score(pacman.score, screen_conf, size)
+                draw_env(screen, mazegen.maze, walls, pacgums, ghosts, pacman, scale)
+                print_score(pacman.score, screen_conf, maze_size)
                 print_life(pacman.get_sprite((0, 3)),
-                           pacman.lives, screen_conf, size)
-                print_timer(lvl_timer, screen_conf, size)
+                           pacman.lives, screen_conf, maze_size)
+                print_timer(lvl_timer, screen_conf, maze_size)
 
                 pacman.eat_pacgums(pacgums, ghosts)
                 pacman.touch_ghost(ghosts)
@@ -238,12 +257,13 @@ def main():
             else:
                 if keys[pg.K_SPACE]:
                     state = "score" if not win else "game"
+                    if not win:
+                        pacman.lives = conf["lives"]
                     win = False
                     mazegen.generate()
                     visu = build_maze_visu(convert_maze(mazegen.maze))
                     hex_maze = convert_maze(mazegen.maze)
                     lvl_timer = conf["level_max_time"]
-                    pacman.lives = conf["lives"]
                     respawn(pacman, ghosts, spawn_loc, conf, visu, hex_maze)
                     pacgums = []
                     if (load_pacgums(pacgums, conf['pacgums'],
@@ -256,11 +276,16 @@ def main():
             get_username(screen_conf, usr_name, win_size)
             if end_usr is True:
                 user = {usr_name: pacman.score}
-                fill_scorers(scorers, user, conf['highscore_filename'])
+                scorers = fill_scorers(scorers, user, conf['highscore_filename'])
                 state = "menu"
                 end_usr = False
                 usr_name = ''
                 pacman.score = 0
+        elif state == "lead":
+            screen.fill((0, 0, 0))
+            get_leaderboard(screen_conf, scorers, win_size)
+            if keys[pg.K_BACKSPACE]:
+                state = "menu"
 
         pg.display.update()
 

@@ -10,7 +10,7 @@ BASE_SPEED = 56
 
 
 class Ghost:
-    def __init__(self, name, score, visu, maze_hexa, x, y, target, red):
+    def __init__(self, name, score, visu, maze_hexa, x, y, scale, tile_size, target, red):
         self.__name = name
         self.score = score
         self.x = x
@@ -19,7 +19,9 @@ class Ghost:
         self.afraid_timer = None
         self.edible = False
         self._sprite_size = (32, 32)
-        self._scaled = (24, 24)
+        self._scaled = self.get_scale(scale)
+        self.tile_size = tile_size
+        self.tile_scale = scale
         self._sheet = self.load_sprite_sheet()
         self.sprite = self.get_sprite((0, 0))
         self.spawn = ((x // 32 + 1), (y // 32 + 1))
@@ -37,6 +39,11 @@ class Ghost:
         self.sprite_index = 0
         self.target_pos = None
         self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
+
+    def get_scale(self, scale) -> Tuple[int, int]:
+        wall_size_x = 32 * scale
+        size = 31.25 * wall_size_x // 100 + 4
+        return (size, size)
 
     def load_sprite_sheet(self):
         if self.state == "afraid":
@@ -65,8 +72,7 @@ class Ghost:
             if colorkey == -1:
                 colorkey = img.get_at((0, 0))
             img.set_colorkey(colorkey, pg.RLEACCEL)
-        return pg.transform.scale(img, (self._scaled[0],
-                                        self._scaled[1]))
+        return pg.transform.scale(img, self._scaled)
 
     def set_algo(self, target):
         if self.state == "chase":
@@ -80,24 +86,28 @@ class Ghost:
                                                                 self.__visu))
                 self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
             elif self.__name == "inky":
-                self.path = self.algo_blinky(self.get_inky_target((int((self.red.x + self._scaled[0]/2) // 32),
-                                                                int((self.red.y + self._scaled[1]/2) // 32)),
-                                                                target, self.target.direction[0] if self.target.direction else "",
-                                                                self.__visu))
-                self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
+                self.path = self.algo_blinky(
+                    self.get_inky_target((int((self.red.x + self._scaled[0]/2) // 32),
+                                         int((self.red.y + self._scaled[1]/2) // 32)),
+                                         target, self.target.direction[0] if self.target.direction else "",
+                                         self.__visu))
+                self.rand_target = self.get_rand_target(self.__maze_hexa,
+                                                        self.__visu)
             else:
                 if len(self.algo_blinky(target)) <= 8 or self.path:
                     self.path = self.algo_blinky(self.rand_target)
                 else:
                     self.path = self.algo_blinky(target)
-                    self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
+                    self.rand_target = self.get_rand_target(self.__maze_hexa,
+                                                            self.__visu)
         elif self.state == "afraid":
             if time.time() - self.afraid_timer >= 10:
                 self.state = "chase"
                 self.edible = False
                 self._sheet = self.load_sprite_sheet()
             if len(self.path) == 0:
-                self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
+                self.rand_target = self.get_rand_target(self.__maze_hexa,
+                                                        self.__visu)
             self.path = self.algo_blinky(self.rand_target)
         elif self.state == "dead":
             self.path = self.algo_blinky(self.spawn)
@@ -195,7 +205,8 @@ class Ghost:
                 self.sprite = self.get_sprite((self.sprite_index, 0))
                 self.x += self.speed * dt
 
-            if len(self.path) >= 2 and self.can_move(self.path[0], dt, self.__visu):
+            if len(self.path) >= 2 and self.can_move(self.path[0], dt,
+                                                     self.__visu):
                 self.previous = self.path.pop(0)
             elif len(self.path) == 1:
                 self.previous = self.path.pop(0)
@@ -310,15 +321,25 @@ class Ghost:
                 return (x, y)
 
 
-def init_ghosts(conf, visu, pacman, maze_hexa) -> Dict[str, Ghost]:
+def init_ghosts(conf, visu, pacman, maze_hexa, scale) -> Dict[str, Ghost]:
     w = conf['width']
     h = conf['height']
+    tile = 32 * scale
+    x1, y1 = 10 * tile/32, 10 * tile/32
+    print(tile)
+
     ghosts = {
-        "blinky": Ghost("blinky", conf["points_per_ghost"], visu, maze_hexa, 20, 20, pacman, None),
-        "clyde": Ghost("clyde", conf["points_per_ghost"], visu, maze_hexa, 20, (h - 1) * 64 + 20, pacman, None),
-        "pinky": Ghost("pinky", conf["points_per_ghost"], visu, maze_hexa, (w - 1) * 64 + 20, (h - 1) * 64 + 20, pacman, None)
+        "blinky": Ghost("blinky", conf["points_per_ghost"], visu, maze_hexa,
+                        x1, y1, scale, tile, pacman, None),
+        "clyde": Ghost("clyde", conf["points_per_ghost"], visu, maze_hexa, x1,
+                       (h - 1) * tile + y1, scale, tile, pacman, None),
+        "pinky": Ghost("pinky", conf["points_per_ghost"], visu, maze_hexa,
+                       (w - 1) * tile + x1, (h - 1) * tile + y1, scale,
+                       tile, pacman, None)
     }
-    ghosts.update({"inky": Ghost("inky", conf["points_per_ghost"], visu, maze_hexa, (w - 1) * 64 + 20, 20, pacman, ghosts['blinky'])})
+    ghosts.update({"inky": Ghost("inky", conf["points_per_ghost"], visu,
+                                 maze_hexa, (w - 1) * tile + x1, y1, scale,
+                                 tile, pacman, ghosts['blinky'])})
     return ghosts
 
 
