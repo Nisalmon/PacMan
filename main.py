@@ -21,7 +21,8 @@ TILE_SIZE = 32
 def get_scale(maze_len, maze_size) -> Tuple[int, int]:
     x = maze_size[0]/maze_len[0]/TILE_SIZE
     y = maze_size[1]/maze_len[1]/TILE_SIZE
-    print(x, y)
+    x = int(x)
+    y = int(y)
     return (x, y)
 
 
@@ -149,11 +150,11 @@ def get_username(screen, username, size):
     screen['font'].render_to(screen['screen'], loc2, f"{username}", (255, 255, 255))
 
 
-def respawn(player, ghosts, loc, conf, visu, maze_hexa):
+def respawn(player, ghosts, loc, conf, visu, maze_hexa, scale):
     player.x, player.y = loc
     player.direction = []
     ghosts.clear()
-    ghosts.update(init_ghosts(conf, visu, player, maze_hexa))
+    ghosts.update(init_ghosts(conf, visu, player, maze_hexa, scale[0]))
 
 
 def main():
@@ -163,11 +164,14 @@ def main():
     win_size = (15 * TILE_SIZE * 2 + 300, 15 * TILE_SIZE * 2)
     maze_size = (15 * TILE_SIZE * 2, 15 * TILE_SIZE * 2)
     scale = get_scale(size, maze_size)
+    print("scale")
+    print(scale)
     screen_conf = load_pygame(win_size)
     screen = screen_conf["screen"]
-    spawn_loc = ((size[0] + size[0] % 2 - 1) * TILE_SIZE * scale[0] / 2 - 12,
-                 (size[1] + size[1] % 2 - 1) * TILE_SIZE * scale[1] / 2 - 12)
-    pacman = init_player(spawn_loc[0], spawn_loc[1], "sprite/Pacman.png", conf['lives'], scale[0])
+    pacman = init_player(0, 0, "sprite/Pacman.png", conf['lives'], scale[0])
+    spawn_loc = ((size[0] + size[0] % 2 - 1) * TILE_SIZE * scale[0] / 2 - pacman._scaled[0]/2,
+                 (size[1] + size[1] % 2 - 1) * TILE_SIZE * scale[1] / 2 - pacman._scaled[1]/2)
+    pacman.x, pacman.y = spawn_loc
     running = True
     mazegen = MazeGenerator(size=size, seed=conf['seed'])
     mazegen.generate(mazegen._seed)
@@ -243,7 +247,7 @@ def main():
                                         (3 - int(time.time() - respawn_timer)),
                                         win_size)
                 if pacman.alive is False:
-                    respawn(pacman, ghosts, spawn_loc, conf, visu, hex_maze)
+                    respawn(pacman, ghosts, spawn_loc, conf, visu, hex_maze, scale)
                     pacman.just_respawned = True
                     pacman.alive = None
                     respawn_timer = time.time()
@@ -264,7 +268,7 @@ def main():
                     visu = build_maze_visu(convert_maze(mazegen.maze))
                     hex_maze = convert_maze(mazegen.maze)
                     lvl_timer = conf["level_max_time"]
-                    respawn(pacman, ghosts, spawn_loc, conf, visu, hex_maze)
+                    respawn(pacman, ghosts, spawn_loc, conf, visu, hex_maze, scale)
                     pacgums = []
                     if (load_pacgums(pacgums, conf['pacgums'],
                                      hex_maze, visu, conf)) == 0:
