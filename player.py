@@ -22,7 +22,6 @@ class Player:
         self.sprite_index = 0
         self.sprite_increment = 1
         self.speed = self.tile_size
-        print(self.speed)
         self.anim_timer = 0
         self.__anim_speed = 0.08
         self.score = 0
@@ -110,14 +109,16 @@ class Player:
             if len(self.direction) == 2:
                 self.direction.pop(0)
 
-    def eat_pacgums(self, pacgums, ghosts):
+    def eat_pacgums(self, pacgums, ghosts, eat, scared):
         for gum in pacgums:
             if (abs(self.x - gum.x) < 10 and
                abs(self.y - gum.y) < 10):
                 self.score += gum.score
+                eat.play(0)
                 pacgums.pop(pacgums.index(gum))
                 if gum._type == "super":
                     for _, gh in ghosts.items():
+                        scared.play(0)
                         gh.state = "afraid"
                         gh.afraid_timer = time.time()
                         gh.edible = True
@@ -141,11 +142,14 @@ class Player:
         center_x = round(check_x + self._scaled[0]//2)
         center_y = round(check_y + self._scaled[1]//2)
         tol = self.get_tolerance()
-        print("tol: ", tol)
-        grid_x1, grid_y1 = int((center_x)/(self.tile_size/2)), int((center_y)/(self.tile_size/2))
-        grid_x2, grid_y2 = int((center_x + tol)/(self.tile_size/2)), int((center_y)/(self.tile_size/2))
-        grid_x3, grid_y3 = int((center_x)/(self.tile_size/2)), int((center_y + tol)/(self.tile_size/2))
-        grid_x4, grid_y4 = int((center_x + tol)/(self.tile_size/2)), int((center_y + tol)/(self.tile_size/2))
+        grid_x1, grid_y1 = (int((center_x)/(self.tile_size/2)),
+                            int((center_y)/(self.tile_size/2)))
+        grid_x2, grid_y2 = (int((center_x + tol)/(self.tile_size/2)),
+                            int((center_y)/(self.tile_size/2)))
+        grid_x3, grid_y3 = (int((center_x)/(self.tile_size/2)),
+                            int((center_y + tol)/(self.tile_size/2)))
+        grid_x4, grid_y4 = (int((center_x + tol)/(self.tile_size/2)),
+                            int((center_y + tol)/(self.tile_size/2)))
         return (visu[grid_y1][grid_x1] == " " and
                 visu[grid_y2][grid_x2] == " " and
                 visu[grid_y3][grid_x3] == " " and

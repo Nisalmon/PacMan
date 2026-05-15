@@ -1,13 +1,13 @@
 from mazegenerator.mazegenerator import MazeGenerator
-import json
 import pygame as pg
 import pygame.freetype
 import os
-from player import Player, init_player
+from config import load_config, check_conf
+from player import init_player
 from pacgums import load_pacgums
 from maze_visu import build_maze_visu
-from ghost import Ghost, move_all_ghosts, init_ghosts
-from game_end import time_out, game_over
+from ghost import move_all_ghosts, init_ghosts
+from game_end import time_out, game_over, win_screen
 from environment import draw_env
 from buttons import init_buttons, draw_button
 from scorers import load_scorers, fill_scorers
@@ -26,22 +26,6 @@ def get_scale(maze_len, maze_size) -> Tuple[int, int]:
     return (x, y)
 
 
-def load_config():
-    conf = {}
-    try:
-        with open("config.json") as f:
-            config = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        raise Exception("There is a problem with the config.json file.")
-    try:
-        for elem in config:
-            for key, value in elem.items():
-                conf[key] = value
-    except Exception:
-        raise Exception("An error occured during the config parsing.")
-    return conf
-
-
 def convert_maze(maze: list[int]) -> list[int]:
     n_maze = []
     hexa = "0123456789ABCDEF"
@@ -57,11 +41,21 @@ def load_pygame(size):
     screen_conf = {}
     pg.init()
     pg.display.init()
+    pg.mixer.init()
     screen_conf['screen'] = pg.display.set_mode((size[0],
                                                  size[1]))
     screen_conf['clock'] = pg.time.Clock()
     screen_conf['font'] = pygame.freetype.Font("./font/PacmanFont.ttf", 24)
     return screen_conf
+
+
+def load_sounds():
+    snd = {
+        "main": pg.mixer.Sound("./sounds/main_menu.mp3"),
+        "waka": pg.mixer.Sound("./sounds/wakawaka.mp3"),
+        "scared": pg.mixer.Sound("./sounds/scared.mp3")
+    }
+    return snd
 
 
 def load_walls(scale):
@@ -98,24 +92,33 @@ def load_walls(scale):
 def get_leaderboard(screen, scorers, size):
     loc = (size[0] // 2, size[1] - 3*size[1]//4)
     txt = "Highscores:"
-    screen['font'].render_to(screen['screen'], (loc[0] - len(txt)*10, loc[1] + 72), f"{txt}", (255, 255, 255))
+    screen['font'].render_to(screen['screen'],
+                             (loc[0] - len(txt)*10, loc[1] + 72),
+                             f"{txt}", (255, 255, 255))
     cnt = 1
     for name, value in scorers.items():
-        screen['font'].render_to(screen['screen'], (loc[0] - len(txt) * 15, loc[1] + 72 + 30*cnt), f"{cnt}. {name}: {value}", (255, 255, 255))
+        screen['font'].render_to(screen['screen'],
+                                 (loc[0] - len(txt) * 15,
+                                  loc[1] + 72 + 30*cnt),
+                                 f"{cnt}. {name}: {value}",
+                                 (255, 255, 255))
         cnt += 1
 
 
 def print_score(score, screen, size):
     loc1 = (size[0] + 20, 12)
     loc2 = (size[0] + 20, 36)
-    screen['font'].render_to(screen['screen'], loc1, "SCORE:", (255, 255, 255))
-    screen['font'].render_to(screen['screen'], loc2, f"{score}", (255, 255, 255))
+    screen['font'].render_to(screen['screen'], loc1,
+                             "SCORE:", (255, 255, 255))
+    screen['font'].render_to(screen['screen'], loc2,
+                             f"{score}", (255, 255, 255))
 
 
 def print_life(sprite, lives, screen, size):
     loc1 = (size[0] + 20, 96)
     loc2 = (size[0] + 20, 120)
-    screen['font'].render_to(screen['screen'], loc1, "Lives:", (255, 255, 255))
+    screen['font'].render_to(screen['screen'], loc1,
+                             "Lives:", (255, 255, 255))
     for i in range(0, lives):
         screen['screen'].blit(sprite, (loc2[0] + i * 24, loc2[1]))
 
@@ -123,8 +126,10 @@ def print_life(sprite, lives, screen, size):
 def print_timer(time, screen, size):
     loc1 = (size[0] + 20, 180)
     loc2 = (size[0] + 20, 204)
-    screen['font'].render_to(screen['screen'], loc1, "Time:", (255, 255, 255))
-    screen['font'].render_to(screen['screen'], loc2, f"{time}", (255, 255, 255))
+    screen['font'].render_to(screen['screen'], loc1,
+                             "Time:", (255, 255, 255))
+    screen['font'].render_to(screen['screen'], loc2,
+                             f"{time}", (255, 255, 255))
 
 
 def print_all():
@@ -133,21 +138,26 @@ def print_all():
 
 def print_countdown(screen, value, size) -> None:
     loc = ((size[0] - 300) // 2 - 10, size[1] // 2 - 72)
-    screen['font'].render_to(screen['screen'], loc, f"{value}", (255, 255, 255))
+    screen['font'].render_to(screen['screen'], loc,
+                             f"{value}", (255, 255, 255))
 
 
 def end_game_print(screen, score, size):
     loc1 = (size[0] // 2 - 116, size[1] // 2 - 48)
     loc2 = (size[0] // 2, size[1] // 2)
-    screen['font'].render_to(screen['screen'], loc1, "Final Score:", (255, 255, 255))
-    screen['font'].render_to(screen['screen'], loc2, f"{score}", (255, 255, 255))
+    screen['font'].render_to(screen['screen'], loc1,
+                             "Final Score:", (255, 255, 255))
+    screen['font'].render_to(screen['screen'], loc2,
+                             f"{score}", (255, 255, 255))
 
 
 def get_username(screen, username, size):
     loc1 = (size[0] // 2 - 116, size[1] // 2 + 48)
     loc2 = (size[0] // 2, size[1] // 2 + 80)
-    screen['font'].render_to(screen['screen'], loc1, "Enter Name:", (255, 255, 255))
-    screen['font'].render_to(screen['screen'], loc2, f"{username}", (255, 255, 255))
+    screen['font'].render_to(screen['screen'], loc1,
+                             "Enter Name:", (255, 255, 255))
+    screen['font'].render_to(screen['screen'], loc2,
+                             f"{username}", (255, 255, 255))
 
 
 def respawn(player, ghosts, loc, conf, visu, maze_hexa, scale):
@@ -158,44 +168,49 @@ def respawn(player, ghosts, loc, conf, visu, maze_hexa, scale):
 
 
 def main():
-    os.system("clear")
-    conf = load_config()
-    size = (conf['width'], conf['height'])
-    win_size = (15 * TILE_SIZE * 2 + 300, 15 * TILE_SIZE * 2)
-    maze_size = (15 * TILE_SIZE * 2, 15 * TILE_SIZE * 2)
-    scale = get_scale(size, maze_size)
-    print("scale")
-    print(scale)
-    screen_conf = load_pygame(win_size)
-    screen = screen_conf["screen"]
-    pacman = init_player(0, 0, "sprite/Pacman.png", conf['lives'], scale[0])
-    spawn_loc = ((size[0] + size[0] % 2 - 1) * TILE_SIZE * scale[0] / 2 - pacman._scaled[0]/2,
-                 (size[1] + size[1] % 2 - 1) * TILE_SIZE * scale[1] / 2 - pacman._scaled[1]/2)
-    pacman.x, pacman.y = spawn_loc
-    running = True
-    mazegen = MazeGenerator(size=size, seed=conf['seed'])
-    mazegen.generate(mazegen._seed)
-    visu = build_maze_visu(convert_maze(mazegen.maze))
-    hex_maze = convert_maze(mazegen.maze)
-    walls = load_walls(scale)
-    ghosts = init_ghosts(conf, visu, pacman, hex_maze, scale[0])
-    scorers = load_scorers(conf['highscore_filename'])
-    if len(scorers) > 10:
-        raise Exception("There is an error with the highscore file.")
-    pacgums = []
-    if (load_pacgums(pacgums, conf['pacgums'],
-                     hex_maze, visu, conf)) == 0:
-        return
-    buttons = init_buttons(win_size)
-    timer = time.time()
-    lvl_timer = conf['level_max_time']
-    respawn_timer = None
-    over = False
-    state = "menu"
-    win = False
-    usr_name = ''
-    end_usr = False
-    pg.display.set_caption("PACMAN")
+    try:
+        os.system("clear")
+        conf = load_config()
+        check_conf(conf)
+        size = (conf['width'], conf['height'])
+        win_size = (15 * TILE_SIZE * 2 + 300, 15 * TILE_SIZE * 2)
+        maze_size = (15 * TILE_SIZE * 2, 15 * TILE_SIZE * 2)
+        scale = get_scale(size, maze_size)
+        screen_conf = load_pygame(win_size)
+        sounds = load_sounds()
+        sounds['main'].set_volume(0.4)
+        screen = screen_conf["screen"]
+        pacman = init_player(0, 0, "sprite/Pacman.png",
+                             conf['lives'], scale[0])
+        spawn_loc = ((size[0] + size[0] % 2 - 1) * TILE_SIZE * scale[0] / 2 - pacman._scaled[0]/2,
+                    (size[1] + size[1] % 2 - 1) * TILE_SIZE * scale[1] / 2 - pacman._scaled[1]/2)
+        pacman.x, pacman.y = spawn_loc
+        running = True
+        mazegen = MazeGenerator(size=size, seed=conf['seed'])
+        mazegen.generate(mazegen._seed)
+        visu = build_maze_visu(convert_maze(mazegen.maze))
+        hex_maze = convert_maze(mazegen.maze)
+        walls = load_walls(scale)
+        ghosts = init_ghosts(conf, visu, pacman, hex_maze, scale[0])
+        scorers = load_scorers(conf['highscore_filename'])
+        if len(scorers) > 10:
+            raise Exception("There is an error with the highscore file.")
+        pacgums = []
+        if (load_pacgums(pacgums, conf['pacgums'],
+                         hex_maze, visu, conf)) == 0:
+            return
+        buttons = init_buttons(win_size)
+        timer = time.time()
+        lvl_timer = conf['level_max_time']
+        respawn_timer = None
+        over = False
+        state = "menu"
+        win = False
+        usr_name = ''
+        end_usr = False
+        pg.display.set_caption("PACMAN")
+    except Exception as e:
+        raise Exception(e)
     while running:
         keys = pg.key.get_pressed()
         n_timer = time.time()
@@ -214,9 +229,11 @@ def main():
         dt = screen_conf['clock'].tick(60) / 1000
         if state == "menu":
             screen.fill((0, 0, 0))
+            sounds['main'].play(-1)
             draw_button(buttons, screen_conf, win_size)
             if buttons["main"].clicked() is True:
                 state = "game"
+                sounds['main'].stop()
             if buttons["score"].clicked() is True:
                 state = "lead"
         elif state == "game":
@@ -226,13 +243,15 @@ def main():
                 if pacman.alive and time.time() - timer >= 1:
                     timer = n_timer
                     lvl_timer -= 1
-                draw_env(screen, mazegen.maze, walls, pacgums, ghosts, pacman, scale)
+                draw_env(screen, mazegen.maze, walls, pacgums, ghosts,
+                         pacman, scale)
                 print_score(pacman.score, screen_conf, maze_size)
                 print_life(pacman.get_sprite((0, 3)),
                            pacman.lives, screen_conf, maze_size)
                 print_timer(lvl_timer, screen_conf, maze_size)
 
-                pacman.eat_pacgums(pacgums, ghosts)
+                pacman.eat_pacgums(pacgums, ghosts, sounds['waka'],
+                                   sounds['scared'])
                 pacman.touch_ghost(ghosts)
 
                 if pacman.alive is True:
@@ -247,7 +266,8 @@ def main():
                                         (3 - int(time.time() - respawn_timer)),
                                         win_size)
                 if pacman.alive is False:
-                    respawn(pacman, ghosts, spawn_loc, conf, visu, hex_maze, scale)
+                    respawn(pacman, ghosts, spawn_loc, conf, visu,
+                            hex_maze, scale)
                     pacman.just_respawned = True
                     pacman.alive = None
                     respawn_timer = time.time()
@@ -255,7 +275,7 @@ def main():
                     game_over(screen_conf, win_size)
                     over = True
                 if nb_gums == 0:
-                    game_over(screen_conf, win_size)
+                    win_screen(screen_conf, win_size)
                     over = True
                     win = True
             else:
@@ -268,7 +288,8 @@ def main():
                     visu = build_maze_visu(convert_maze(mazegen.maze))
                     hex_maze = convert_maze(mazegen.maze)
                     lvl_timer = conf["level_max_time"]
-                    respawn(pacman, ghosts, spawn_loc, conf, visu, hex_maze, scale)
+                    respawn(pacman, ghosts, spawn_loc, conf,
+                            visu, hex_maze, scale)
                     pacgums = []
                     if (load_pacgums(pacgums, conf['pacgums'],
                                      hex_maze, visu, conf)) == 0:
@@ -280,7 +301,8 @@ def main():
             get_username(screen_conf, usr_name, win_size)
             if end_usr is True:
                 user = {usr_name: pacman.score}
-                scorers = fill_scorers(scorers, user, conf['highscore_filename'])
+                scorers = fill_scorers(scorers, user,
+                                       conf['highscore_filename'])
                 state = "menu"
                 end_usr = False
                 usr_name = ''
@@ -295,4 +317,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(e)

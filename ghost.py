@@ -76,7 +76,6 @@ class Ghost:
         return pg.transform.scale(img, self._scaled)
 
     def set_algo(self, target):
-        print("target ", target)
         if self.state == "chase":
             self.target_pos = target
             if self.__name == "blinky":
@@ -125,8 +124,6 @@ class Ghost:
         s_x = int((self.x + self._scaled[0]/2) // (self.tile_size/2))
         s_y = int((self.y + self._scaled[1]/2) // (self.tile_size/2))
 
-        print(self.__name, s_x, s_y)
-
         DIRS = {
             "UP": (0, -1),
             "RIGHT": (1, 0),
@@ -173,7 +170,6 @@ class Ghost:
                     int((self.target.x + self._scaled[0] / 2) // (self.tile_size/2)),
                     int((self.target.y + self._scaled[1] / 2) // (self.tile_size/2))
                 )
-        print(self.__name, self.path, target)
         direction = ["UP", "DOWN", "LEFT", "RIGHT"]
         self.anim_timer += dt
         if self.anim_timer >= self.anim_speed:
@@ -182,7 +178,10 @@ class Ghost:
             if self.sprite_index == 1 or self.sprite_index == 0:
                 self.sprite_increment *= -1
 
-        if self.previous in direction and self.can_move(self.previous, dt, self.__visu) and not (self.path and self.can_move(self.path[0], dt, self.__visu)):
+        if (self.previous in direction and
+            self.can_move(self.previous, dt, self.__visu) and not
+            (self.path and
+             self.can_move(self.path[0], dt, self.__visu))):
             if not set(self.path) == {self.previous}:
                 self.set_algo(target)
             if self.previous == "UP":
@@ -232,8 +231,8 @@ class Ghost:
         elif dir == "DOWN":
             check_y += self.speed * dt
 
-        center_x = int(check_x + self._scaled[0]/2)
-        center_y = int(check_y + self._scaled[1]/2)
+        center_x = int(check_x + self._scaled[0]//2)
+        center_y = int(check_y + self._scaled[1]//2)
         tol = self.get_tolerance()
         grid_x1, grid_y1 = int((center_x) / (self.tile_size/2)), int((center_y) / (self.tile_size/2))
         grid_x2, grid_y2 = int((center_x + tol) / (self.tile_size/2)), int((center_y) / (self.tile_size/2))
@@ -268,7 +267,6 @@ class Ghost:
             while visu[target_y][target_x] == "█":
                 count += 1
                 if count > 50:
-                    print("INFINITE LOOP PREVENTED")
                     break
                 if target_x > pac_x:
                     target_x -= 1
@@ -303,7 +301,6 @@ class Ghost:
             while visu[target_y][target_x] == "█":
                 count += 1
                 if count > 50:
-                    print("INFINITE LOOP PREVENTED")
                     break
                 if target_x > pac_x:
                     target_x -= 1
@@ -336,8 +333,6 @@ def init_ghosts(conf, visu, pacman, maze_hexa, scale) -> Dict[str, Ghost]:
     h = conf['height']
     tile = 32 * scale
     x1, y1 = tile/2 - 12*(scale/2), tile/2 - 12*(scale/2)
-    print(tile)
-    print(x1, y1)
     ghosts = {
         "blinky": Ghost("blinky", conf["points_per_ghost"], visu, maze_hexa,
                         x1, y1, scale, tile, pacman, None),
