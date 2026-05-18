@@ -142,6 +142,19 @@ def print_countdown(screen, value, size) -> None:
                              f"{value}", (255, 255, 255))
 
 
+def print_paused(screen, size) -> None:
+    loc = (size[0]//2, size[1]//2)
+    txt = [
+        "Paused",
+        "Press TAB to return to menu",
+        "or SPACE to continue."
+    ]
+    for i in range(len(txt)):
+        screen['font'].render_to(screen['screen'],
+                                 (loc[0] - (len(txt[i])//2)*24, loc[1] + 36 * i),
+                                 f"{txt[i]}", (255, 255, 255))
+
+
 def end_game_print(screen, score, size):
     loc1 = (size[0] // 2 - 116, size[1] // 2 - 48)
     loc2 = (size[0] // 2, size[1] // 2)
@@ -175,6 +188,7 @@ def main():
         size = (conf['width'], conf['height'])
         win_size = (15 * TILE_SIZE * 2 + 300, 15 * TILE_SIZE * 2)
         maze_size = (15 * TILE_SIZE * 2, 15 * TILE_SIZE * 2)
+        paused = pg.Surface(win_size)
         scale = get_scale(size, maze_size)
         screen_conf = load_pygame(win_size)
         sounds = load_sounds()
@@ -204,6 +218,7 @@ def main():
         lvl_timer = conf['level_max_time']
         respawn_timer = None
         over = False
+        pause = False
         state = "menu"
         win = False
         usr_name = ''
@@ -237,8 +252,11 @@ def main():
             if buttons["score"].clicked() is True:
                 state = "lead"
         elif state == "game":
+            pause = False
             if over is False:
                 screen.fill((0, 0, 0))
+                if keys[pg.K_ESCAPE]:
+                    state = "paused"
                 nb_gums = len(pacgums)
                 if pacman.alive and time.time() - timer >= 1:
                     timer = n_timer
@@ -295,6 +313,17 @@ def main():
                                      hex_maze, visu, conf)) == 0:
                         break
                     over = False
+        elif state == "paused":
+            if not pause:
+                paused.fill((0, 0, 0))
+                paused.set_alpha(160)
+                screen.blit(paused, (0, 0))
+                pause = True
+            print_paused(screen_conf, win_size)
+            if keys[pg.K_TAB]:
+                state = "menu"
+            if keys[pg.K_SPACE]:
+                state = "game"
         elif state == "score":
             screen.fill((0, 0, 0))
             end_game_print(screen_conf, pacman.score, win_size)
