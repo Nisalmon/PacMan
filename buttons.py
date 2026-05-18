@@ -34,7 +34,7 @@ def init_buttons(size):
     return buttons
 
 
-def draw_button(buttons, screen_conf, size):
+def draw_button(buttons, screen_conf):
     for _, button in buttons.items():
         button.color = (127, 127, 127) if not button.mouse_in_rect() else (97,
                                                                            97,
@@ -44,3 +44,13 @@ def draw_button(buttons, screen_conf, size):
                                       (button.x - button.height/16,
                                       button.y + button.height/8),
                                       button.name, (255, 255, 255))
+
+
+def cheat_button(buttons, size):
+    buttons.update(
+        {
+            "cheat": Button(((size[0] - 48) // 2),
+                            ((size[1] + 424) // 2),
+                            "Cheat")
+        }
+    )

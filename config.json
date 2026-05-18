@@ -1,7 +1,7 @@
 [
     {"highscore_filename": "highscorers.json"},
-    {"width": 11},
-    {"height":13},
+    {"width": 13},
+    {"height":14},
     {"lives": 3},
     {"pacgums": 140},
     {"points_per_pacgum": 10},

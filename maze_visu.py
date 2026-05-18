@@ -1,5 +1,3 @@
-import pygame as pg
-
 TILE_SIZE = 32
 
 

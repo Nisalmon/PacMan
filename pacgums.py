@@ -21,14 +21,20 @@ def load_pacgums(pacgums, nb_pacgums, maze_hexa, visu, conf):
         print("Cannot add all of the pacgums..")
         return 0
     cnt = 0
-    while cnt < nb_pacgums - 4:
-        x = random.randint(0, len(visu[0]) - 1)
-        y = random.randint(0, len(visu) - 1)
+    super_pac_loc = [
+        (1, 1),
+        (len(visu[0]) - 2, 1),
+        (1, len(visu) - 2),
+        (len(visu[0]) - 2, len(visu) - 2)
+    ]
+    while cnt < 4 and cnt < nb_pacgums:
+        x, y = super_pac_loc[cnt]
         if (visu[y][x] != " " or
            visited[int((y - 1) / 2)][int((x - 1) / 2)] is True or
            maze_hexa[int((y - 1) / 2)][int((x - 1) / 2)] == "F"):
             continue
-        pacgums.append(Pacgums(x * 32 - 16, y * 32 - 16, conf["points_per_pacgum"]))
+        pacgums.append(Pacgums(x * 32 - 16, y * 32 - 16,
+                               conf["points_per_super_pacgum"], "super"))
         visited[int((y - 1) / 2)][int((x - 1) / 2)] = True
         cnt += 1
     while cnt < nb_pacgums:
@@ -38,7 +44,8 @@ def load_pacgums(pacgums, nb_pacgums, maze_hexa, visu, conf):
            visited[int((y - 1) / 2)][int((x - 1) / 2)] is True or
            maze_hexa[int((y - 1) / 2)][int((x - 1) / 2)] == "F"):
             continue
-        pacgums.append(Pacgums(x * 32 - 16, y * 32 - 16, conf["points_per_super_pacgum"],"super"))
+        pacgums.append(Pacgums(x * 32 - 16, y * 32 - 16,
+                               conf["points_per_pacgum"]))
         visited[int((y - 1) / 2)][int((x - 1) / 2)] = True
         cnt += 1
     return 1

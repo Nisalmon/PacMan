@@ -1,4 +1,5 @@
-from mazegenerator.mazegenerator import MazeGenerator
+import sys
+from mazegenerator import MazeGenerator
 import pygame as pg
 import pygame.freetype
 import os
@@ -8,8 +9,11 @@ from pacgums import load_pacgums
 from maze_visu import build_maze_visu
 from ghost import move_all_ghosts, init_ghosts
 from game_end import time_out, game_over, win_screen
-from environment import draw_env
-from buttons import init_buttons, draw_button
+from utils import (draw_env, print_all, print_countdown, print_paused,
+                   end_game_print, get_leaderboard, get_username, load_walls,
+                   load_pygame, load_sounds, enter_input, enable_cheats,
+                   init_cheats, get_cheats, activate_cheats)
+from buttons import init_buttons, draw_button, cheat_button
 from scorers import load_scorers, fill_scorers
 import time
 from typing import Tuple, Dict, Union, Optional, List
@@ -37,142 +41,6 @@ def convert_maze(maze: list[int]) -> list[int]:
     return n_maze
 
 
-def load_pygame(size):
-    screen_conf = {}
-    pg.init()
-    pg.display.init()
-    pg.mixer.init()
-    screen_conf['screen'] = pg.display.set_mode((size[0],
-                                                 size[1]))
-    screen_conf['clock'] = pg.time.Clock()
-    screen_conf['font'] = pygame.freetype.Font("./font/PacmanFont.ttf", 24)
-    return screen_conf
-
-
-def load_sounds():
-    snd = {
-        "main": pg.mixer.Sound("./sounds/main_menu.mp3"),
-        "waka": pg.mixer.Sound("./sounds/wakawaka.mp3"),
-        "scared": pg.mixer.Sound("./sounds/scared.mp3")
-    }
-    return snd
-
-
-def load_walls(scale):
-    wall_sprite = pg.transform.scale_by(
-        pg.image.load("sprite/Wall.png").convert_alpha(),
-        scale
-        )
-    corner_wall_sprite = pg.transform.scale_by(
-        pg.image.load("sprite/Corner_wall.png").convert_alpha(),
-        scale
-        )
-    incline_wall_sprite = pg.transform.scale_by(
-        pg.image.load("sprite/Incline_wall.png").convert_alpha(),
-        scale
-        )
-    four_wall_sprite = pg.transform.scale_by(
-        pg.image.load("sprite/Four_wall.png").convert_alpha(),
-        scale
-        )
-    Triple_wall_sprite = pg.transform.scale_by(
-        pg.image.load("sprite/Triple_wall.png").convert_alpha(),
-        scale
-        )
-    walls = {
-        "wall": wall_sprite,
-        "corner_wall": corner_wall_sprite,
-        "incline_wall": incline_wall_sprite,
-        "four_wall": four_wall_sprite,
-        "triple_wall": Triple_wall_sprite
-    }
-    return walls
-
-
-def get_leaderboard(screen, scorers, size):
-    loc = (size[0] // 2, size[1] - 3*size[1]//4)
-    txt = "Highscores:"
-    screen['font'].render_to(screen['screen'],
-                             (loc[0] - len(txt)*10, loc[1] + 72),
-                             f"{txt}", (255, 255, 255))
-    cnt = 1
-    for name, value in scorers.items():
-        screen['font'].render_to(screen['screen'],
-                                 (loc[0] - len(txt) * 15,
-                                  loc[1] + 72 + 30*cnt),
-                                 f"{cnt}. {name}: {value}",
-                                 (255, 255, 255))
-        cnt += 1
-
-
-def print_score(score, screen, size):
-    loc1 = (size[0] + 20, 12)
-    loc2 = (size[0] + 20, 36)
-    screen['font'].render_to(screen['screen'], loc1,
-                             "SCORE:", (255, 255, 255))
-    screen['font'].render_to(screen['screen'], loc2,
-                             f"{score}", (255, 255, 255))
-
-
-def print_life(sprite, lives, screen, size):
-    loc1 = (size[0] + 20, 96)
-    loc2 = (size[0] + 20, 120)
-    screen['font'].render_to(screen['screen'], loc1,
-                             "Lives:", (255, 255, 255))
-    for i in range(0, lives):
-        screen['screen'].blit(sprite, (loc2[0] + i * 24, loc2[1]))
-
-
-def print_timer(time, screen, size):
-    loc1 = (size[0] + 20, 180)
-    loc2 = (size[0] + 20, 204)
-    screen['font'].render_to(screen['screen'], loc1,
-                             "Time:", (255, 255, 255))
-    screen['font'].render_to(screen['screen'], loc2,
-                             f"{time}", (255, 255, 255))
-
-
-def print_all():
-    pass
-
-
-def print_countdown(screen, value, size) -> None:
-    loc = ((size[0] - 300) // 2 - 10, size[1] // 2 - 72)
-    screen['font'].render_to(screen['screen'], loc,
-                             f"{value}", (255, 255, 255))
-
-
-def print_paused(screen, size) -> None:
-    loc = (size[0]//2, size[1]//2)
-    txt = [
-        "Paused",
-        "Press TAB to return to menu",
-        "or SPACE to continue."
-    ]
-    for i in range(len(txt)):
-        screen['font'].render_to(screen['screen'],
-                                 (loc[0] - (len(txt[i])//2)*24, loc[1] + 36 * i),
-                                 f"{txt[i]}", (255, 255, 255))
-
-
-def end_game_print(screen, score, size):
-    loc1 = (size[0] // 2 - 116, size[1] // 2 - 48)
-    loc2 = (size[0] // 2, size[1] // 2)
-    screen['font'].render_to(screen['screen'], loc1,
-                             "Final Score:", (255, 255, 255))
-    screen['font'].render_to(screen['screen'], loc2,
-                             f"{score}", (255, 255, 255))
-
-
-def get_username(screen, username, size):
-    loc1 = (size[0] // 2 - 116, size[1] // 2 + 48)
-    loc2 = (size[0] // 2, size[1] // 2 + 80)
-    screen['font'].render_to(screen['screen'], loc1,
-                             "Enter Name:", (255, 255, 255))
-    screen['font'].render_to(screen['screen'], loc2,
-                             f"{username}", (255, 255, 255))
-
-
 def respawn(player, ghosts, loc, conf, visu, maze_hexa, scale):
     player.x, player.y = loc
     player.direction = []
@@ -180,10 +48,15 @@ def respawn(player, ghosts, loc, conf, visu, maze_hexa, scale):
     ghosts.update(init_ghosts(conf, visu, player, maze_hexa, scale[0]))
 
 
-def main():
+def main(argv):
     try:
         os.system("clear")
-        conf = load_config()
+        if len(argv) != 2:
+            print("Invalid number of arguments.")
+            print("To use this program you must do:")
+            print("python3 main.py 'path/to/config.json'")
+            return
+        conf = load_config(argv[1])
         check_conf(conf)
         size = (conf['width'], conf['height'])
         win_size = (15 * TILE_SIZE * 2 + 300, 15 * TILE_SIZE * 2)
@@ -196,8 +69,10 @@ def main():
         screen = screen_conf["screen"]
         pacman = init_player(0, 0, "sprite/Pacman.png",
                              conf['lives'], scale[0])
-        spawn_loc = ((size[0] + size[0] % 2 - 1) * TILE_SIZE * scale[0] / 2 - pacman._scaled[0]/2,
-                    (size[1] + size[1] % 2 - 1) * TILE_SIZE * scale[1] / 2 - pacman._scaled[1]/2)
+        spawn_loc = (
+            (size[0] + size[0] % 2 - 1) * TILE_SIZE * scale[0] / 2 - pacman._scaled[0]/2,
+            (size[1] + size[1] % 2 - 1) * TILE_SIZE * scale[1] / 2 - pacman._scaled[1]/2
+            )
         pacman.x, pacman.y = spawn_loc
         running = True
         mazegen = MazeGenerator(size=size, seed=conf['seed'])
@@ -223,6 +98,9 @@ def main():
         win = False
         usr_name = ''
         end_usr = False
+        inputs = []
+        cheat = False
+        cheats = init_cheats()
         pg.display.set_caption("PACMAN")
     except Exception as e:
         raise Exception(e)
@@ -243,38 +121,53 @@ def main():
                         usr_name = usr_name[:-1]
         dt = screen_conf['clock'].tick(60) / 1000
         if state == "menu":
-            screen.fill((0, 0, 0))
+            screen.fill((0, 0, 60))
             sounds['main'].play(-1)
-            draw_button(buttons, screen_conf, win_size)
+            print(inputs)
+            running = enter_input(inputs, running)
+            if not cheat and enable_cheats(inputs):
+                cheat = True
+                cheat_button(buttons, win_size)
+                screen.fill((0, 255, 0))
+            draw_button(buttons, screen_conf)
             if buttons["main"].clicked() is True:
                 state = "game"
                 sounds['main'].stop()
+                lvl_timer = conf["level_max_time"]
+                pacman.lives = conf['lives']
+                pacman.score = 0
             if buttons["score"].clicked() is True:
                 state = "lead"
+            if cheat and buttons["cheat"].clicked() is True:
+                state = "cheat_menu"
         elif state == "game":
             pause = False
             if over is False:
-                screen.fill((0, 0, 0))
+                screen.fill((0, 0, 60))
+                draw_env(screen, mazegen.maze, walls, pacgums, ghosts,
+                         pacman, scale)
+                if cheats['Skip level (press S)'] and keys[pg.K_s]:
+                    win_screen(screen_conf, win_size)
+                    over = True
+                    win = True
                 if keys[pg.K_ESCAPE]:
                     state = "paused"
                 nb_gums = len(pacgums)
                 if pacman.alive and time.time() - timer >= 1:
                     timer = n_timer
                     lvl_timer -= 1
-                draw_env(screen, mazegen.maze, walls, pacgums, ghosts,
-                         pacman, scale)
-                print_score(pacman.score, screen_conf, maze_size)
-                print_life(pacman.get_sprite((0, 3)),
-                           pacman.lives, screen_conf, maze_size)
-                print_timer(lvl_timer, screen_conf, maze_size)
-
+                print_all(screen_conf, maze_size, pacman.score,
+                          pacman.get_sprite((0, 3),), pacman.lives,
+                          lvl_timer)
                 pacman.eat_pacgums(pacgums, ghosts, sounds['waka'],
                                    sounds['scared'])
-                pacman.touch_ghost(ghosts)
+                if not cheats['Invincibility']:
+                    pacman.touch_ghost(ghosts)
 
                 if pacman.alive is True:
                     pacman.move_player(dt * 2, visu)
-                    move_all_ghosts(ghosts, dt * 2)
+                    if not cheats['Ghost Freeze']:
+                        move_all_ghosts(ghosts, dt * 2)
                 if pacman.just_respawned is True:
                     if time.time() - respawn_timer >= 3:
                         pacman.just_respawned = False
@@ -299,8 +192,6 @@ def main():
             else:
                 if keys[pg.K_SPACE]:
                     state = "score" if not win else "game"
-                    if not win:
-                        pacman.lives = conf["lives"]
                     win = False
                     mazegen.generate()
                     visu = build_maze_visu(convert_maze(mazegen.maze))
@@ -322,10 +213,21 @@ def main():
             print_paused(screen_conf, win_size)
             if keys[pg.K_TAB]:
                 state = "menu"
+                mazegen.generate()
+                visu = build_maze_visu(convert_maze(mazegen.maze))
+                hex_maze = convert_maze(mazegen.maze)
+                respawn(pacman, ghosts, spawn_loc, conf,
+                        visu, hex_maze, scale)
+                pacman.just_respawned = False
+                pacman.alive = True
+                pacgums = []
+                if (load_pacgums(pacgums, conf['pacgums'],
+                                 hex_maze, visu, conf)) == 0:
+                    break
             if keys[pg.K_SPACE]:
                 state = "game"
         elif state == "score":
-            screen.fill((0, 0, 0))
+            screen.fill((0, 0, 60))
             end_game_print(screen_conf, pacman.score, win_size)
             get_username(screen_conf, usr_name, win_size)
             if end_usr is True:
@@ -335,18 +237,23 @@ def main():
                 state = "menu"
                 end_usr = False
                 usr_name = ''
-                pacman.score = 0
         elif state == "lead":
-            screen.fill((0, 0, 0))
+            screen.fill((0, 0, 60))
             get_leaderboard(screen_conf, scorers, win_size)
             if keys[pg.K_BACKSPACE]:
                 state = "menu"
+        elif state == "cheat_menu":
+            screen.fill((0, 0, 60))
+            get_cheats(screen_conf, cheats)
+            if keys[pg.K_BACKSPACE]:
+                state = "menu"
+            activate_cheats(cheats)
 
         pg.display.update()
 
 
 if __name__ == "__main__":
     try:
-        main()
+        main(sys.argv)
     except Exception as e:
         print(e)

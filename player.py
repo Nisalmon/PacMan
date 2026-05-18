@@ -111,8 +111,8 @@ class Player:
 
     def eat_pacgums(self, pacgums, ghosts, eat, scared):
         for gum in pacgums:
-            if (abs(self.x - gum.x) < 10 and
-               abs(self.y - gum.y) < 10):
+            if (abs(self.x - gum.x) < 7 and
+               abs(self.y - gum.y) < 7):
                 self.score += gum.score
                 eat.play(0)
                 pacgums.pop(pacgums.index(gum))

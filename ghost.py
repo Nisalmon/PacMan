@@ -83,15 +83,22 @@ class Ghost:
                 self.rand_target = self.get_rand_target(self.__maze_hexa,
                                                         self.__visu)
             elif self.__name == "pinky":
-                self.path = self.algo_blinky(self.get_pinky_target(target, self.target.direction[0] if self.target.direction else "",
-                                                                self.__visu))
-                self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
+                self.path = self.algo_blinky(
+                    self.get_pinky_target(target,
+                                          (self.target.direction[0]
+                                           if self.target.direction else ""),
+                                          self.__visu))
+                self.rand_target = self.get_rand_target(self.__maze_hexa,
+                                                        self.__visu)
             elif self.__name == "inky":
                 self.path = self.algo_blinky(
-                    self.get_inky_target((int((self.red.x + self._scaled[0]/2) // 32),
-                                         int((self.red.y + self._scaled[1]/2) // 32)),
-                                         target, self.target.direction[0] if self.target.direction else "",
-                                         self.__visu))
+                    self.get_inky_target(
+                        (int((self.red.x + self._scaled[0]/2) // 32),
+                         int((self.red.y + self._scaled[1]/2) // 32)),
+                        target,
+                        (self.target.direction[0]
+                         if self.target.direction else ""),
+                        self.__visu))
                 self.rand_target = self.get_rand_target(self.__maze_hexa,
                                                         self.__visu)
             else:
@@ -166,9 +173,10 @@ class Ghost:
         return path
 
     def move_ghost(self, dt):
+        ht = self.tile_size/2
         target = (
-                    int((self.target.x + self._scaled[0] / 2) // (self.tile_size/2)),
-                    int((self.target.y + self._scaled[1] / 2) // (self.tile_size/2))
+                    int((self.target.x + self._scaled[0] / 2) // ht),
+                    int((self.target.y + self._scaled[1] / 2) // ht)
                 )
         direction = ["UP", "DOWN", "LEFT", "RIGHT"]
         self.anim_timer += dt
@@ -234,10 +242,14 @@ class Ghost:
         center_x = int(check_x + self._scaled[0]//2)
         center_y = int(check_y + self._scaled[1]//2)
         tol = self.get_tolerance()
-        grid_x1, grid_y1 = int((center_x) / (self.tile_size/2)), int((center_y) / (self.tile_size/2))
-        grid_x2, grid_y2 = int((center_x + tol) / (self.tile_size/2)), int((center_y) / (self.tile_size/2))
-        grid_x3, grid_y3 = int((center_x) / (self.tile_size/2)), int((center_y + tol) / (self.tile_size/2))
-        grid_x4, grid_y4 = int((center_x + tol) / (self.tile_size/2)), int((center_y + tol) / (self.tile_size/2))
+        grid_x1, grid_y1 = (int((center_x) / (self.tile_size/2)),
+                            int((center_y) / (self.tile_size/2)))
+        grid_x2, grid_y2 = (int((center_x + tol) / (self.tile_size/2)),
+                            int((center_y) / (self.tile_size/2)))
+        grid_x3, grid_y3 = (int((center_x) / (self.tile_size/2)),
+                            int((center_y + tol) / (self.tile_size/2)))
+        grid_x4, grid_y4 = (int((center_x + tol) / (self.tile_size/2)),
+                            int((center_y + tol) / (self.tile_size/2)))
         return (visu[grid_y1][grid_x1] == " " and
                 visu[grid_y2][grid_x2] == " " and
                 visu[grid_y3][grid_x3] == " " and

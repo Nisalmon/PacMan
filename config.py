@@ -1,19 +1,21 @@
 import json
 
 
-def load_config():
+def load_config(file):
     conf = {}
     try:
-        with open("config.json") as f:
+        with open(file) as f:
             config = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        raise Exception("There is a problem with the config.json file.")
+        print("There is a problem with the config.json file.")
+        return {}
     try:
         for elem in config:
             for key, value in elem.items():
                 conf[key] = value
     except Exception:
-        raise Exception("An error occured during the config parsing.")
+        print("An error occured during the config parsing.")
+        return {}
     return conf
 
 
@@ -51,11 +53,11 @@ def check_time(conf):
         t = conf['level_max_time']
         if t <= 0 or not isinstance(t, int):
             print("Time must be an integer greater than 0 !")
-            print("Setting time to 3.")
+            print("Setting level_max_time to 3.")
             conf['level_max_time'] = 300
     except KeyError:
-        print("Key for time is missing !")
-        print("Setting time to 300.")
+        print("Key for level_max_time is missing !")
+        print("Setting level_max_time to 300.")
         conf['level_max_time'] = 300
 
 
@@ -124,6 +126,20 @@ def check_seed(conf):
         conf['seed'] = 0
 
 
+def check_highscorers(conf):
+    try:
+        if not conf['highscore_filename'].endswith(".json"):
+            raise Exception()
+        with open(conf['highscore_filename'], "r") as _:
+            pass
+    except (json.JSONDecodeError, FileNotFoundError,
+            PermissionError, KeyError, Exception):
+        print("An error occured when processing highscorers.")
+        print("Setting highscore_filename to default value:")
+        print("highscores.json")
+        conf['highscore_filename'] = "highscores.json"
+
+
 def check_conf(conf):
     check_size(conf)
     check_time(conf)
@@ -133,3 +149,4 @@ def check_conf(conf):
     check_super_pacgum_score(conf)
     check_ghost_score(conf)
     check_seed(conf)
+    check_highscorers(conf)
