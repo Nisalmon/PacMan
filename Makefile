@@ -1,7 +1,11 @@
+PYTHON = $(if $(wildcard $(VENV_PYTHON)), $(VENV_PYTHON), python3)
+PIP = $(if $(wildcard $(VENV_PIP)), $(VENV_PIP), pip)
 MYPY_FLAGS= --warn-return-any --warn-unused-ignores --ignore-missing-imports \
 			--disallow-untyped-defs --check-untyped-defs
 
 
+install:
+	@$(PIP) install requierements.txt
 
 clean:
 				@echo "$(RED) Cleaning...$(RESET)"
@@ -13,26 +17,29 @@ clean:
 
 lint:
 	@echo "$(RED)Searching for norm error...$(RESET)"
-	@python3 -m flake8 .
-	@python3 -m mypy . $(MYPY_FLAGS)
+	@$(PYTHON) -m flake8 .
+	@$(PYTHON) -m mypy . $(MYPY_FLAGS)
 
 lint-strict:
 	@echo "$(RED)Searching for severe norm error...$(RESET)"
-	@python3 -m flake8 .
-	@python3 -m mypy . --strict
+	@$(PYTHON) -m flake8 .
+	@$(PYTHON) -m mypy . --strict
 
 run:
-	@python3 main.py config.json
+	@$(PYTHON) main.py config.json
 
 debug:
-	@python3 -m pdb main.py config.json
+	@$(PYTHON) -m pdb main.py config.json
 
 venv:
 				@echo "$(BLUE)Create virtual environment$(RESET)"
-				@python3 -m venv .venv
+				@$(PYTHON) -m venv .venv
 				@echo "$(BLUE)Run 'source .venv/bin/activate' to go to the virtual environment."
 
 all: run
+
+
+.PHONY: run all debug venv lint lint-strict clean install
 
 
 RESET=\033[0m
