@@ -1,7 +1,10 @@
+from typing import List
+
+
 TILE_SIZE = 32
 
 
-def build_maze_visu(maze):
+def build_maze_visu(maze: List[List[str]]) -> List[List[str]]:
     visu = [["█" for _ in range(len(maze[0]) * 2 + 1)]
             for _ in range(len(maze) * 2 + 1)]
     for i in range(len(maze[0])):
@@ -10,7 +13,8 @@ def build_maze_visu(maze):
     return break_walls(visu, maze)
 
 
-def break_walls(visu, maze):
+def break_walls(visu: List[List[str]],
+                maze: List[List[str]]) -> List[List[str]]:
     for i in range(len(maze[0])):
         for j in range(len(maze)):
             if maze[j][i] == '1':

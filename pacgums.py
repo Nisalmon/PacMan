@@ -1,9 +1,11 @@
 import pygame as pg
 import random
+from typing import List, Any, Dict
 
 
 class Pacgums:
-    def __init__(self, x, y, score, _type="normal"):
+    def __init__(self, x: int, y: int, score: int,
+                 _type: str = "normal") -> None:
         self.x = x
         self.y = y
         self._type = _type
@@ -14,7 +16,11 @@ class Pacgums:
             self.sprite = pg.image.load("./sprite/pacgum.png")
 
 
-def load_pacgums(pacgums, nb_pacgums, maze_hexa, visu, conf):
+def load_pacgums(pacgums: List[Pacgums],
+                 nb_pacgums: int,
+                 maze_hexa: List[List[str]],
+                 visu: List[List[str]],
+                 conf: Dict[str, Any]) -> int:
     visited = [[False for _ in range(len(maze_hexa[0]))]
                for _ in range(len(maze_hexa))]
     if nb_pacgums > len(visited) * len(visited[0]):

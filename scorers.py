@@ -1,8 +1,9 @@
 import json
+from typing import Dict
 
 
-def load_scorers(score_loc):
-    scores = {}
+def load_scorers(score_loc: str) -> Dict[str, int]:
+    scores: Dict[str, int] = {}
     try:
         with open(score_loc, "r") as f:
             scores = json.load(f)
@@ -11,7 +12,9 @@ def load_scorers(score_loc):
     return scores
 
 
-def fill_scorers(scorers, user, score_loc):
+def fill_scorers(scorers: Dict[str, int],
+                 user: Dict[str, int],
+                 score_loc: str) -> Dict[str, int]:
     scorers.update(user)
     n_scorers = {k: v for k, v in sorted(scorers.items(),
                                          key=lambda item: item[1],
@@ -24,4 +27,7 @@ def fill_scorers(scorers, user, score_loc):
             json.dump(scorers, f)
         return scorers
     except Exception:
-        raise ("Error")
+        print("Error")
+        return {
+            "ERROR": 1000000
+        }

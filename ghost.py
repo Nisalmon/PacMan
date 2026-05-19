@@ -1,8 +1,8 @@
+from __future__ import annotations
 import pygame as pg
 from collections import deque
-from player import Player
 import random
-from typing import Dict, List, Optional, Union, Tuple
+from typing import Dict, List, Tuple, Deque, Any
 import time
 
 
@@ -11,13 +11,17 @@ DEFAULT_SCALE = 24
 
 
 class Ghost:
-    def __init__(self, name, score, visu, maze_hexa, x, y, scale, tile_size, target, red):
+    def __init__(self,
+                 name: str, score: int, visu: List[List[str]],
+                 maze_hexa: List[List[str]], x: int, y: int,
+                 scale: int, tile_size: int, target: Any,
+                 red: Ghost | None) -> None:
         self.__name = name
         self.score = score
-        self.x = x
-        self.y = y
+        self.x: float = x
+        self.y: float = y
         self.state = "chase"
-        self.afraid_timer = None
+        self.afraid_timer = 0.0
         self.edible = False
         self._sprite_size = (32, 32)
         self._scaled = self.get_scale(scale)
@@ -26,27 +30,26 @@ class Ghost:
         self._sheet = self.load_sprite_sheet()
         self.sprite = self.get_sprite((0, 0))
         self.spawn = ((x // 32 + 1), (y // 32 + 1))
-        self.path = []
+        self.path: List[str] = []
         self.previous = ""
         self.__visu = visu
         self.__maze_hexa = maze_hexa
-        self.target: Player = target
+        self.target: Any = target
         self.speed = target.speed - 8
-        if self.__name == "inky":
+        if self.__name == "inky" and red:
             self.red = red
-        self.anim_timer = 0
+        self.anim_timer = 0.0
         self.anim_speed = 0.08
         self.sprite_increment = 1
         self.sprite_index = 0
-        self.target_pos = None
         self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
 
-    def get_scale(self, scale) -> Tuple[int, int]:
+    def get_scale(self, scale: int) -> Tuple[float, float]:
         wall_size_x = 32 * scale
         size = 31.25 * wall_size_x // 100 + 4
         return (size, size)
 
-    def load_sprite_sheet(self):
+    def load_sprite_sheet(self) -> pg.Surface:
         if self.state == "afraid":
             return pg.image.load("./sprite/afraid.png").convert_alpha()
         elif self.state == "dead":
@@ -60,7 +63,11 @@ class Ghost:
         else:
             return pg.image.load("./sprite/clyde.png").convert_alpha()
 
-    def get_sprite(self, loc, colorkey=(255, 255, 255)):
+    def get_sprite(self, loc: Tuple[int, int],
+                   colorkey: (pg.Color |
+                              Tuple[int, int, int] |
+                              int) = (255, 255, 255)
+                   ) -> pg.Surface:
         x = loc[1] * self._sprite_size[0]
         y = loc[0] * self._sprite_size[1]
         if self.state == "afraid":
@@ -75,9 +82,8 @@ class Ghost:
             img.set_colorkey(colorkey, pg.RLEACCEL)
         return pg.transform.scale(img, self._scaled)
 
-    def set_algo(self, target):
+    def set_algo(self, target: Tuple[int, int]) -> None:
         if self.state == "chase":
-            self.target_pos = target
             if self.__name == "blinky":
                 self.path = self.algo_blinky(target)
                 self.rand_target = self.get_rand_target(self.__maze_hexa,
@@ -109,7 +115,7 @@ class Ghost:
                     self.rand_target = self.get_rand_target(self.__maze_hexa,
                                                             self.__visu)
         elif self.state == "afraid":
-            if time.time() - self.afraid_timer >= 10:
+            if self.afraid_timer and time.time() - self.afraid_timer >= 10:
                 self.state = "chase"
                 self.edible = False
                 self._sheet = self.load_sprite_sheet()
@@ -124,8 +130,8 @@ class Ghost:
                 self.edible = False
                 self._sheet = self.load_sprite_sheet()
 
-    def algo_blinky(self, target):
-        queue = deque()
+    def algo_blinky(self, target: Tuple[int, int]) -> List[str]:
+        queue: Deque[Tuple[int, ...]] = deque()
         visited = set()
         parent = {}
         s_x = int((self.x + self._scaled[0]/2) // (self.tile_size/2))
@@ -172,7 +178,7 @@ class Ghost:
         path.reverse()
         return path
 
-    def move_ghost(self, dt):
+    def move_ghost(self, dt: float) -> None:
         ht = self.tile_size/2
         target = (
                     int((self.target.x + self._scaled[0] / 2) // ht),
@@ -226,7 +232,8 @@ class Ghost:
         else:
             self.set_algo(target)
 
-    def can_move(self, dir, dt, visu) -> bool:
+    def can_move(self, dir: str,
+                 dt: float, visu: List[List[str]]) -> bool:
         check_x = self.x
         check_y = self.y
 
@@ -255,11 +262,14 @@ class Ghost:
                 visu[grid_y3][grid_x3] == " " and
                 visu[grid_y4][grid_x4] == " ")
 
-    def get_tolerance(self):
+    def get_tolerance(self) -> float:
         tol = self.tile_size/2 - 2 * (self.tile_size/2)/32
         return tol
 
-    def get_inky_target(self, red_pos, pac_pos, pac_dir,  visu):
+    def get_inky_target(self, red_pos: Tuple[int, int],
+                        pac_pos: Tuple[int, int],
+                        pac_dir: str,
+                        visu: List[List[str]]) -> Tuple[int, int]:
         pac_x, pac_y = pac_pos
         red_x, red_y = red_pos
         pivot_x, pivot_y = (pac_x, pac_y)
@@ -295,7 +305,9 @@ class Ghost:
         else:
             return pac_pos
 
-    def get_pinky_target(self, pac_pos, pac_dir,  visu):
+    def get_pinky_target(self, pac_pos: Tuple[int, int],
+                         pac_dir: str,
+                         visu: List[List[str]]) -> Tuple[int, int]:
         pac_x, pac_y = pac_pos
         pivot_x, pivot_y = (pac_x, pac_y)
         if pac_dir:
@@ -329,7 +341,8 @@ class Ghost:
         else:
             return pac_pos
 
-    def get_rand_target(self, maze_hexa, visu):
+    def get_rand_target(self, maze_hexa: List[List[str]],
+                        visu: List[List[str]]) -> Tuple[int, int]:
         while True:
             x = random.randint(0, len(visu[0]) - 1)
             y = random.randint(0, len(visu) - 1)
@@ -340,26 +353,31 @@ class Ghost:
                 return (x, y)
 
 
-def init_ghosts(conf, visu, pacman, maze_hexa, scale) -> Dict[str, Ghost]:
-    w = conf['width']
-    h = conf['height']
+def init_ghosts(conf: Dict[str, str | int],
+                visu: List[List[str]],
+                pacman: Any,
+                maze_hexa: List[List[str]],
+                scale: int) -> Dict[str, Ghost]:
+    w = int(conf['width'])
+    h = int(conf['height'])
     tile = 32 * scale
-    x1, y1 = tile/2 - 12*(scale/2), tile/2 - 12*(scale/2)
+    x1, y1 = int(tile/2 - 12*(scale/2)), int(tile/2 - 12*(scale/2))
+    pts = int(conf['points_per_ghost'])
     ghosts = {
-        "blinky": Ghost("blinky", conf["points_per_ghost"], visu, maze_hexa,
+        "blinky": Ghost("blinky", pts, visu, maze_hexa,
                         x1, y1, scale, tile, pacman, None),
-        "clyde": Ghost("clyde", conf["points_per_ghost"], visu, maze_hexa, x1,
+        "clyde": Ghost("clyde", pts, visu, maze_hexa, x1,
                        (h - 1) * tile + y1, scale, tile, pacman, None),
-        "pinky": Ghost("pinky", conf["points_per_ghost"], visu, maze_hexa,
+        "pinky": Ghost("pinky", pts, visu, maze_hexa,
                        (w - 1) * tile + x1, (h - 1) * tile + y1, scale,
                        tile, pacman, None)
     }
-    ghosts.update({"inky": Ghost("inky", conf["points_per_ghost"], visu,
+    ghosts.update({"inky": Ghost("inky", pts, visu,
                                  maze_hexa, (w - 1) * tile + x1, y1, scale,
                                  tile, pacman, ghosts['blinky'])})
     return ghosts
 
 
-def move_all_ghosts(ghosts, dt) -> None:
+def move_all_ghosts(ghosts: Dict[str, Ghost], dt: float) -> None:
     for _, value in ghosts.items():
         value.move_ghost(dt)

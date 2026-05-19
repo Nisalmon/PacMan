@@ -1,8 +1,9 @@
 import json
+from typing import Dict
 
 
-def load_config(file):
-    conf = {}
+def load_config(file: str) -> Dict[str, str | int]:
+    conf: Dict[str, int | str] = {}
     try:
         with open(file) as f:
             config = json.load(f)
@@ -19,10 +20,10 @@ def load_config(file):
     return conf
 
 
-def check_size(conf):
+def check_size(conf: Dict[str, str | int]) -> None:
     try:
-        w = conf['width']
-        h = conf['height']
+        w: int = int(conf['width'])
+        h: int = int(conf['height'])
         if w > 15 or w < 11 or h > 15 or h < 11:
             print("Width and Height must be ranging from 11 to 15 !")
             print("Setting them to default values : 15.")
@@ -35,9 +36,9 @@ def check_size(conf):
         conf['height'] = 15
 
 
-def check_lives(conf):
+def check_lives(conf: Dict[str, str | int]) -> None:
     try:
-        lvs = conf['lives']
+        lvs: int = int(conf['lives'])
         if lvs <= 0 or not isinstance(lvs, int):
             print("Lives must be an integer greater than 0 !")
             print("Setting lives to 3.")
@@ -48,9 +49,9 @@ def check_lives(conf):
         conf['lives'] = 3
 
 
-def check_time(conf):
+def check_time(conf: Dict[str, str | int]) -> None:
     try:
-        t = conf['level_max_time']
+        t: int = int(conf['level_max_time'])
         if t <= 0 or not isinstance(t, int):
             print("Time must be an integer greater than 0 !")
             print("Setting level_max_time to 3.")
@@ -61,9 +62,9 @@ def check_time(conf):
         conf['level_max_time'] = 300
 
 
-def check_pacgum(conf):
+def check_pacgum(conf: Dict[str, str | int]) -> None:
     try:
-        pg = conf['pacgums']
+        pg: int = int(conf['pacgums'])
         if pg <= 0 or not isinstance(pg, int):
             print("Pacgums must be an integer greater than 0 !")
             print("Setting pacgums to 100.")
@@ -74,9 +75,9 @@ def check_pacgum(conf):
         conf['pacgums'] = 100
 
 
-def check_pacgum_score(conf):
+def check_pacgum_score(conf: Dict[str, str | int]) -> None:
     try:
-        pg = conf['points_per_pacgum']
+        pg: int = int(conf['points_per_pacgum'])
         if pg <= 0 or not isinstance(pg, int):
             print("Pacgums score must be an integer greater than 0 !")
             print("Setting points_per_pacgum to 10.")
@@ -87,9 +88,9 @@ def check_pacgum_score(conf):
         conf['points_per_pacgum'] = 10
 
 
-def check_super_pacgum_score(conf):
+def check_super_pacgum_score(conf: Dict[str, str | int]) -> None:
     try:
-        pg = conf['points_per_super_pacgum']
+        pg: int = int(conf['points_per_super_pacgum'])
         if pg <= 0 or not isinstance(pg, int):
             print("Super pacgums score must be an integer greater than 0 !")
             print("Setting points_per_super_pacgum to 50.")
@@ -100,9 +101,9 @@ def check_super_pacgum_score(conf):
         conf['points_per_super_pacgum'] = 50
 
 
-def check_ghost_score(conf):
+def check_ghost_score(conf: Dict[str, str | int]) -> None:
     try:
-        g = conf['points_per_ghost']
+        g: int = int(conf['points_per_ghost'])
         if g <= 0 or not isinstance(g, int):
             print("Ghost score must be an integer greater than 0 !")
             print("Setting points_per_ghost to 200.")
@@ -113,9 +114,9 @@ def check_ghost_score(conf):
         conf['points_per_ghost'] = 200
 
 
-def check_seed(conf):
+def check_seed(conf: Dict[str, str | int]) -> None:
     try:
-        sd = conf['seed']
+        sd: int = int(conf['seed'])
         if sd < 0 or not isinstance(sd, int):
             print("Seed must be an integer greater than 0 !")
             print("Setting seed to 0.")
@@ -126,9 +127,9 @@ def check_seed(conf):
         conf['seed'] = 0
 
 
-def check_highscorers(conf):
+def check_highscorers(conf: Dict[str, str | int]) -> None:
     try:
-        if not conf['highscore_filename'].endswith(".json"):
+        if not str(conf['highscore_filename']).endswith(".json"):
             raise Exception()
         with open(conf['highscore_filename'], "r") as _:
             pass
@@ -140,7 +141,20 @@ def check_highscorers(conf):
         conf['highscore_filename'] = "highscores.json"
 
 
-def check_conf(conf):
+def check_level(conf: Dict[str, str | int]) -> None:
+    try:
+        lvl: int = int(conf['level'])
+        if lvl <= 0 or not isinstance(lvl, int):
+            print("Level must be an integer higher than 0 !")
+            print("Setting it to default value: 10")
+            conf['level'] = 10
+    except KeyError:
+        print("The level key is missing.")
+        print("Setting level to default value: 10")
+        conf['level'] = 10
+
+
+def check_conf(conf: Dict[str, str | int]) -> None:
     check_size(conf)
     check_time(conf)
     check_lives(conf)
@@ -150,3 +164,4 @@ def check_conf(conf):
     check_ghost_score(conf)
     check_seed(conf)
     check_highscorers(conf)
+    check_level(conf)

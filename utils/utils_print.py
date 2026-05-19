@@ -1,4 +1,10 @@
-def get_leaderboard(screen, scorers, size):
+import pygame as pg
+from typing import Tuple, Dict, Any
+
+
+def get_leaderboard(screen: Dict[str, Any],
+                    scorers: Dict[str, int],
+                    size: Tuple[int, int]) -> None:
     loc = (size[0] // 2, size[1] - 3*size[1]//4)
     txt = "Highscores:"
     screen['font'].render_to(screen['screen'],
@@ -14,7 +20,9 @@ def get_leaderboard(screen, scorers, size):
         cnt += 1
 
 
-def print_score(score, screen, size):
+def print_score(score: int,
+                screen: Dict[str, Any],
+                size: Tuple[int, int]) -> None:
     loc1 = (size[0] + 20, 12)
     loc2 = (size[0] + 20, 36)
     screen['font'].render_to(screen['screen'], loc1,
@@ -23,7 +31,10 @@ def print_score(score, screen, size):
                              f"{score}", (255, 255, 255))
 
 
-def print_life(sprite, lives, screen, size):
+def print_life(sprite: pg.Surface,
+               lives: int,
+               screen: Dict[str, Any],
+               size: Tuple[int, int]) -> None:
     loc1 = (size[0] + 20, 96)
     loc2 = (size[0] + 20, 120)
     screen['font'].render_to(screen['screen'], loc1,
@@ -32,7 +43,9 @@ def print_life(sprite, lives, screen, size):
         screen['screen'].blit(sprite, (loc2[0] + i * 24, loc2[1]))
 
 
-def print_timer(time, screen, size):
+def print_timer(time: int,
+                screen: Dict[str, Any],
+                size: Tuple[int, int]) -> None:
     loc1 = (size[0] + 20, 180)
     loc2 = (size[0] + 20, 204)
     screen['font'].render_to(screen['screen'], loc1,
@@ -41,19 +54,40 @@ def print_timer(time, screen, size):
                              f"{time}", (255, 255, 255))
 
 
-def print_all(screen, size, score, sprite, lives, time):
+def print_level(current: int,
+                max_lvl: int,
+                screen: Dict[str, Any],
+                size: Tuple[int, int]) -> None:
+    loc1 = (size[0] + 20, 260)
+    screen['font'].render_to(screen['screen'], loc1,
+                             f"Level {current}/{max_lvl}",
+                             (255, 255, 255))
+
+
+def print_all(screen: Dict[str, Any],
+              size: Tuple[int, int],
+              score: int,
+              sprite: pg.Surface,
+              lives: int,
+              time: int,
+              level: int,
+              nb_level: int) -> None:
     print_score(score, screen, size)
     print_life(sprite, lives, screen, size)
     print_timer(time, screen, size)
+    print_level(level, nb_level, screen, size)
 
 
-def print_countdown(screen, value, size) -> None:
+def print_countdown(screen: Dict[str, Any],
+                    value: int,
+                    size: Tuple[int, int]) -> None:
     loc = ((size[0] - 300) // 2 - 10, size[1] // 2 - 72)
     screen['font'].render_to(screen['screen'], loc,
                              f"{value}", (255, 255, 255))
 
 
-def print_paused(screen, size) -> None:
+def print_paused(screen: Dict[str, Any],
+                 size: Tuple[int, int]) -> None:
     loc = (size[0]//2, size[1]//2)
     txt = [
         "Paused",
@@ -67,7 +101,25 @@ def print_paused(screen, size) -> None:
                                  f"{txt[i]}", (255, 255, 255))
 
 
-def end_game_print(screen, score, size):
+def print_guide(screen: Dict[str, Any]) -> None:
+    instr = [
+        "Move using arrow keys.",
+        "In game, press ESC to pause the game."
+    ]
+    screen['font'].render_to(screen['screen'],
+                             (0, 0),
+                             "Instructions:",
+                             (255, 255, 255))
+    for i in range(len(instr)):
+        screen['font'].render_to(screen['screen'],
+                                 (0, 36*(i + 1)),
+                                 instr[i],
+                                 (255, 255, 255))
+
+
+def end_game_print(screen: Dict[str, Any],
+                   score: int,
+                   size: Tuple[int, int]) -> None:
     loc1 = (size[0] // 2 - 116, size[1] // 2 - 48)
     loc2 = (size[0] // 2, size[1] // 2)
     screen['font'].render_to(screen['screen'], loc1,
@@ -76,7 +128,27 @@ def end_game_print(screen, score, size):
                              f"{score}", (255, 255, 255))
 
 
-def get_username(screen, username, size):
+def congrats_print(screen: Dict[str, Any],
+                   size: Tuple[int, int]) -> None:
+    loc = (size[0] // 2, size[1] // 2 - 148)
+    txt = "Congratulation"
+    screen['font'].render_to(screen['screen'], (loc[0] - (len(txt) // 2) * 24,
+                                                loc[1]),
+                             f"{txt}", (255, 255, 255))
+
+
+def game_over_print(screen: Dict[str, Any],
+                    size: Tuple[int, int]) -> None:
+    loc = (size[0] // 2, size[1] // 2 - 148)
+    txt = "Game Over..."
+    screen['font'].render_to(screen['screen'], (loc[0] - (len(txt) // 2) * 24,
+                                                loc[1]),
+                             f"{txt}", (255, 255, 255))
+
+
+def get_username(screen: Dict[str, Any],
+                 username: str,
+                 size: Tuple[int, int]) -> None:
     loc1 = (size[0] // 2 - 116, size[1] // 2 + 48)
     loc2 = (size[0] // 2, size[1] // 2 + 80)
     screen['font'].render_to(screen['screen'], loc1,
@@ -85,7 +157,8 @@ def get_username(screen, username, size):
                              f"{username}", (255, 255, 255))
 
 
-def get_cheats(screen, cheats):
+def get_cheats(screen: Dict[str, Any],
+               cheats: Dict[str, bool]) -> None:
     cnt = 0
     for name, value in cheats.items():
         color = (255, 0, 0) if not value else (0, 255, 0)

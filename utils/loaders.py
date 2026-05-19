@@ -1,9 +1,10 @@
 import pygame as pg
 import pygame.freetype
+from typing import Tuple, Dict, Any
 
 
-def load_pygame(size):
-    screen_conf = {}
+def load_pygame(size: Tuple[int, int]) -> Dict[str, Any]:
+    screen_conf: Dict[str, Any] = {}
     pg.init()
     pg.display.init()
     pg.mixer.init()
@@ -14,7 +15,7 @@ def load_pygame(size):
     return screen_conf
 
 
-def load_sounds():
+def load_sounds() -> Dict[str, Any]:
     snd = {
         "main": pg.mixer.Sound("./sounds/main_menu.mp3"),
         "waka": pg.mixer.Sound("./sounds/wakawaka.mp3"),
@@ -23,7 +24,7 @@ def load_sounds():
     return snd
 
 
-def load_walls(scale):
+def load_walls(scale: Tuple[int, int]) -> Dict[str, Any]:
     wall_sprite = pg.transform.scale_by(
         pg.image.load("sprite/Wall.png").convert_alpha(),
         scale

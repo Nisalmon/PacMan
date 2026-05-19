@@ -1,6 +1,8 @@
 import pygame as pg
 import time
-from typing import Tuple
+from pacgums import Pacgums
+from ghost import Ghost
+from typing import Tuple, Dict, List
 
 
 TILE_SIZE = 32
@@ -10,9 +12,11 @@ HALF_PLAYER = 24 // 2
 
 
 class Player:
-    def __init__(self, x, y, sprite_loc, lives, scale):
-        self.x = x
-        self.y = y
+    def __init__(self, x: int, y: int,
+                 sprite_loc: str, lives: int,
+                 scale: int) -> None:
+        self.x: float = x
+        self.y: float = y
         self._sheet = pg.image.load(sprite_loc).convert_alpha()
         self._sprite_size = (32, 32)
         self._scaled = self.get_scale(scale)
@@ -22,20 +26,24 @@ class Player:
         self.sprite_index = 0
         self.sprite_increment = 1
         self.speed = self.tile_size
-        self.anim_timer = 0
+        self.anim_timer = 0.0
         self.__anim_speed = 0.08
         self.score = 0
-        self.direction = []
+        self.direction: List[str] = []
         self.lives = lives
-        self.alive = True
+        self.alive: bool | None = True
         self.just_respawned = False
 
-    def get_scale(self, scale) -> Tuple[int, int]:
+    def get_scale(self, scale: int) -> Tuple[float, float]:
         wall_size_x = 32 * scale
         size = 31.25 * wall_size_x // 100 + 4
         return (size, size)
 
-    def get_sprite(self, loc, colorkey=(255, 255, 255)):
+    def get_sprite(self, loc: Tuple[int, int],
+                   colorkey: pg.Color | int | Tuple[int, int, int] = (255,
+                                                                      255,
+                                                                      255)
+                   ) -> pg.Surface:
         x = loc[1] * self._sprite_size[0]
         y = loc[0] * self._sprite_size[1]
 
@@ -48,7 +56,7 @@ class Player:
             img.set_colorkey(colorkey, pg.RLEACCEL)
         return pg.transform.scale(img, self._scaled)
 
-    def move_player(self, dt, visu):
+    def move_player(self, dt: float, visu: List[List[str]]) -> None:
         keys = pg.key.get_pressed()
         dir = self.direction[0] if self.direction else ""
         dir2 = (self.can_move(self.direction[1], dt, visu)
@@ -109,7 +117,11 @@ class Player:
             if len(self.direction) == 2:
                 self.direction.pop(0)
 
-    def eat_pacgums(self, pacgums, ghosts, eat, scared):
+    def eat_pacgums(self,
+                    pacgums: List[Pacgums],
+                    ghosts: Dict[str, Ghost],
+                    eat: pg.mixer.Sound,
+                    scared: pg.mixer.Sound) -> None:
         for gum in pacgums:
             if (abs(self.x - gum.x) < 7 and
                abs(self.y - gum.y) < 7):
@@ -124,9 +136,10 @@ class Player:
                         gh.edible = True
                         gh._sheet = gh.load_sprite_sheet()
 
-    def can_move(self, dir, dt, visu) -> bool:
-        check_x = round(self.x)
-        check_y = round(self.y)
+    def can_move(self, dir: str, dt: float,
+                 visu: List[List[str]]) -> bool:
+        check_x: float = round(self.x)
+        check_y: float = round(self.y)
 
         if dir == "":
             return False
@@ -155,11 +168,11 @@ class Player:
                 visu[grid_y3][grid_x3] == " " and
                 visu[grid_y4][grid_x4] == " ")
 
-    def get_tolerance(self):
+    def get_tolerance(self) -> float:
         tol = self.tile_size/2 - 3 * (self.tile_size/2)/32
         return tol
 
-    def touch_ghost(self, ghosts):
+    def touch_ghost(self, ghosts: Dict[str, Ghost]) -> None:
         for _, value in ghosts.items():
             if (abs(self.x - value.x) < 15 and
                abs(self.y - value.y) < 15 and
@@ -177,5 +190,9 @@ class Player:
                 value._sheet = value.load_sprite_sheet()
 
 
-def init_player(x, y, sprite, lives, scale) -> Player:
+def init_player(x: int,
+                y: int,
+                sprite: str,
+                lives: int,
+                scale: int) -> Player:
     return Player(x, y, sprite, lives, scale)

@@ -1,8 +1,8 @@
 import pygame as pg
-from typing import Dict
+from typing import Dict, List
 
 
-def enter_input(inputs, running) -> bool:
+def enter_input(inputs: List[str], running: bool) -> bool:
     for event in pg.event.get():
         if event.type == pg.QUIT and running:
             running = False
@@ -21,7 +21,7 @@ def enter_input(inputs, running) -> bool:
     return running
 
 
-def enable_cheats(cheat_code) -> bool:
+def enable_cheats(cheat_code: List[str]) -> bool:
     correct_cheat = [
         "UP", "UP", "DOWN", "DOWN",
         "LEFT", "RIGHT", "LEFT", "RIGHT",
@@ -42,7 +42,7 @@ def init_cheats() -> Dict[str, bool]:
     return cheats
 
 
-def activate_cheats(cheats):
+def activate_cheats(cheats: Dict[str, bool]) -> None:
     for event in pg.event.get():
         if event.type == pg.KEYDOWN:
             keys = pg.key.get_pressed()

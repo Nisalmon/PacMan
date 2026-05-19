@@ -1,28 +1,29 @@
 import sys
 from mazegenerator import MazeGenerator
 import pygame as pg
-import pygame.freetype
 import os
 from config import load_config, check_conf
-from player import init_player
-from pacgums import load_pacgums
+from player import init_player, Player
+from pacgums import load_pacgums, Pacgums
 from maze_visu import build_maze_visu
-from ghost import move_all_ghosts, init_ghosts
+from ghost import move_all_ghosts, init_ghosts, Ghost
 from game_end import time_out, game_over, win_screen
 from utils import (draw_env, print_all, print_countdown, print_paused,
                    end_game_print, get_leaderboard, get_username, load_walls,
                    load_pygame, load_sounds, enter_input, enable_cheats,
-                   init_cheats, get_cheats, activate_cheats)
+                   init_cheats, get_cheats, activate_cheats, game_over_print,
+                   congrats_print, print_guide)
 from buttons import init_buttons, draw_button, cheat_button
 from scorers import load_scorers, fill_scorers
 import time
-from typing import Tuple, Dict, Union, Optional, List
+from typing import Tuple, List, Dict
 
 
 TILE_SIZE = 32
 
 
-def get_scale(maze_len, maze_size) -> Tuple[int, int]:
+def get_scale(maze_len: Tuple[int, int],
+              maze_size: Tuple[int, int]) -> Tuple[int, int]:
     x = maze_size[0]/maze_len[0]/TILE_SIZE
     y = maze_size[1]/maze_len[1]/TILE_SIZE
     x = int(x)
@@ -30,7 +31,7 @@ def get_scale(maze_len, maze_size) -> Tuple[int, int]:
     return (x, y)
 
 
-def convert_maze(maze: list[int]) -> list[int]:
+def convert_maze(maze: List[List[int]]) -> List[List[str]]:
     n_maze = []
     hexa = "0123456789ABCDEF"
     for lst in maze:
@@ -41,14 +42,17 @@ def convert_maze(maze: list[int]) -> list[int]:
     return n_maze
 
 
-def respawn(player, ghosts, loc, conf, visu, maze_hexa, scale):
+def respawn(player: Player, ghosts: Dict[str, Ghost],
+            loc: Tuple[int, int], conf: Dict[str, int | str],
+            visu: List[List[str]], maze_hexa: List[List[str]],
+            scale: Tuple[int, int]) -> None:
     player.x, player.y = loc
     player.direction = []
     ghosts.clear()
     ghosts.update(init_ghosts(conf, visu, player, maze_hexa, scale[0]))
 
 
-def main(argv):
+def main(argv: List[str]) -> None:
     try:
         os.system("clear")
         if len(argv) != 2:
@@ -58,7 +62,7 @@ def main(argv):
             return
         conf = load_config(argv[1])
         check_conf(conf)
-        size = (conf['width'], conf['height'])
+        size = (int(conf['width']), int(conf['height']))
         win_size = (15 * TILE_SIZE * 2 + 300, 15 * TILE_SIZE * 2)
         maze_size = (15 * TILE_SIZE * 2, 15 * TILE_SIZE * 2)
         paused = pg.Surface(win_size)
@@ -68,29 +72,31 @@ def main(argv):
         sounds['main'].set_volume(0.4)
         screen = screen_conf["screen"]
         pacman = init_player(0, 0, "sprite/Pacman.png",
-                             conf['lives'], scale[0])
+                             int(conf['lives']), scale[0])
         spawn_loc = (
-            (size[0] + size[0] % 2 - 1) * TILE_SIZE * scale[0] / 2 - pacman._scaled[0]/2,
-            (size[1] + size[1] % 2 - 1) * TILE_SIZE * scale[1] / 2 - pacman._scaled[1]/2
+            int((size[0] + size[0] % 2 - 1) * TILE_SIZE * scale[0] / 2
+                - pacman._scaled[0]/2),
+            int((size[1] + size[1] % 2 - 1) * TILE_SIZE * scale[1] / 2
+                - pacman._scaled[1]/2)
             )
         pacman.x, pacman.y = spawn_loc
         running = True
-        mazegen = MazeGenerator(size=size, seed=conf['seed'])
+        mazegen = MazeGenerator(size=size, seed=int(conf['seed']))
         mazegen.generate(mazegen._seed)
         visu = build_maze_visu(convert_maze(mazegen.maze))
         hex_maze = convert_maze(mazegen.maze)
         walls = load_walls(scale)
         ghosts = init_ghosts(conf, visu, pacman, hex_maze, scale[0])
-        scorers = load_scorers(conf['highscore_filename'])
+        scorers = load_scorers(str(conf['highscore_filename']))
         if len(scorers) > 10:
             raise Exception("There is an error with the highscore file.")
-        pacgums = []
-        if (load_pacgums(pacgums, conf['pacgums'],
+        pacgums: List[Pacgums] = []
+        if (load_pacgums(pacgums, int(conf['pacgums']),
                          hex_maze, visu, conf)) == 0:
             return
         buttons = init_buttons(win_size)
         timer = time.time()
-        lvl_timer = conf['level_max_time']
+        lvl_timer = int(conf['level_max_time'])
         respawn_timer = None
         over = False
         pause = False
@@ -98,7 +104,7 @@ def main(argv):
         win = False
         usr_name = ''
         end_usr = False
-        inputs = []
+        inputs: List[str] = []
         cheat = False
         cheats = init_cheats()
         pg.display.set_caption("PACMAN")
@@ -121,9 +127,9 @@ def main(argv):
                         usr_name = usr_name[:-1]
         dt = screen_conf['clock'].tick(60) / 1000
         if state == "menu":
+            level = 0
             screen.fill((0, 0, 60))
             sounds['main'].play(-1)
-            print(inputs)
             running = enter_input(inputs, running)
             if not cheat and enable_cheats(inputs):
                 cheat = True
@@ -133,11 +139,15 @@ def main(argv):
             if buttons["main"].clicked() is True:
                 state = "game"
                 sounds['main'].stop()
-                lvl_timer = conf["level_max_time"]
-                pacman.lives = conf['lives']
+                lvl_timer = int(conf["level_max_time"])
+                pacman.lives = int(conf['lives'])
                 pacman.score = 0
             if buttons["score"].clicked() is True:
                 state = "lead"
+            if buttons["guide"].clicked() is True:
+                state = "guide"
+            if buttons["exit"].clicked() is True:
+                running = False
             if cheat and buttons["cheat"].clicked() is True:
                 state = "cheat_menu"
         elif state == "game":
@@ -158,7 +168,7 @@ def main(argv):
                     lvl_timer -= 1
                 print_all(screen_conf, maze_size, pacman.score,
                           pacman.get_sprite((0, 3),), pacman.lives,
-                          lvl_timer)
+                          lvl_timer, level + 1, int(conf["level"]))
                 pacman.eat_pacgums(pacgums, ghosts, sounds['waka'],
                                    sounds['scared'])
                 if not cheats['Invincibility']:
@@ -169,12 +179,17 @@ def main(argv):
                     if not cheats['Ghost Freeze']:
                         move_all_ghosts(ghosts, dt * 2)
                 if pacman.just_respawned is True:
-                    if time.time() - respawn_timer >= 3:
+                    if respawn_timer and time.time() - respawn_timer >= 3:
                         pacman.just_respawned = False
                         pacman.alive = True
                     else:
+                        if respawn_timer:
+                            cnt_down: int = (3 - int(time.time()
+                                                     - respawn_timer))
+                        else:
+                            cnt_down = 0
                         print_countdown(screen_conf,
-                                        (3 - int(time.time() - respawn_timer)),
+                                        (cnt_down),
                                         win_size)
                 if pacman.alive is False:
                     respawn(pacman, ghosts, spawn_loc, conf, visu,
@@ -192,15 +207,18 @@ def main(argv):
             else:
                 if keys[pg.K_SPACE]:
                     state = "score" if not win else "game"
+                    level += 1
+                    if level == conf['level']:
+                        state = "score"
                     win = False
                     mazegen.generate()
                     visu = build_maze_visu(convert_maze(mazegen.maze))
                     hex_maze = convert_maze(mazegen.maze)
-                    lvl_timer = conf["level_max_time"]
+                    lvl_timer = int(conf["level_max_time"])
                     respawn(pacman, ghosts, spawn_loc, conf,
                             visu, hex_maze, scale)
                     pacgums = []
-                    if (load_pacgums(pacgums, conf['pacgums'],
+                    if (load_pacgums(pacgums, int(conf['pacgums']),
                                      hex_maze, visu, conf)) == 0:
                         break
                     over = False
@@ -221,25 +239,34 @@ def main(argv):
                 pacman.just_respawned = False
                 pacman.alive = True
                 pacgums = []
-                if (load_pacgums(pacgums, conf['pacgums'],
+                if (load_pacgums(pacgums, int(conf['pacgums']),
                                  hex_maze, visu, conf)) == 0:
                     break
             if keys[pg.K_SPACE]:
                 state = "game"
         elif state == "score":
             screen.fill((0, 0, 60))
+            if level == conf['level']:
+                congrats_print(screen_conf, win_size)
+            else:
+                game_over_print(screen_conf, win_size)
             end_game_print(screen_conf, pacman.score, win_size)
             get_username(screen_conf, usr_name, win_size)
             if end_usr is True:
                 user = {usr_name: pacman.score}
                 scorers = fill_scorers(scorers, user,
-                                       conf['highscore_filename'])
+                                       str(conf['highscore_filename']))
                 state = "menu"
                 end_usr = False
                 usr_name = ''
         elif state == "lead":
             screen.fill((0, 0, 60))
             get_leaderboard(screen_conf, scorers, win_size)
+            if keys[pg.K_BACKSPACE]:
+                state = "menu"
+        elif state == "guide":
+            screen.fill((0, 0, 60))
+            print_guide(screen_conf)
             if keys[pg.K_BACKSPACE]:
                 state = "menu"
         elif state == "cheat_menu":

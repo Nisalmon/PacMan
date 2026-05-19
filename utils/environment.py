@@ -1,10 +1,15 @@
 import pygame as pg
+from typing import Dict, List, Tuple, Any
+from pacgums import Pacgums
+from player import Player
+from ghost import Ghost
 
 
 TILE_SIZE = 32
 
 
-def draw_maze(screen, visu, walls, scale):
+def draw_maze(screen: pg.Surface, visu: List[List[int]],
+              walls: Dict[str, Any], scale: Tuple[int, int]) -> None:
     rotated_wall_90 = pg.transform.rotate(walls['wall'], 90)
     rotated_wall_180 = pg.transform.rotate(walls['wall'], 180)
     rotated_wall_270 = pg.transform.rotate(walls['wall'], 270)
@@ -63,17 +68,19 @@ def draw_maze(screen, visu, walls, scale):
                 screen.blit(walls["four_wall"], (x, y))
 
 
-def draw_pacgums(pacgums, screen) -> None:
+def draw_pacgums(pacgums: List[Pacgums], screen: pg.Surface) -> None:
     for elem in pacgums:
         screen.blit(elem.sprite, (elem.x, elem.y))
 
 
-def draw_ghosts(screen, ghosts) -> None:
+def draw_ghosts(screen: pg.Surface, ghosts: Dict[str, Ghost]) -> None:
     for _, value in ghosts.items():
         screen.blit(value.sprite, (value.x, value.y))
 
 
-def draw_env(screen, visu, walls, pacgums, ghosts, player, scale):
+def draw_env(screen: pg.Surface, visu: List[List[int]], walls: Dict[str, Any],
+             pacgums: List[Pacgums], ghosts: Dict[str, Ghost],
+             player: Player, scale: Tuple[int, int]) -> None:
     draw_maze(screen, visu, walls, scale)
     draw_pacgums(pacgums, screen)
     draw_ghosts(screen, ghosts)
