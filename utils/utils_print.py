@@ -40,6 +40,8 @@ def print_life(sprite: pg.Surface,
     screen['font'].render_to(screen['screen'], loc1,
                              "Lives:", (255, 255, 255))
     for i in range(0, lives):
+        if i >= 3:
+            break
         screen['screen'].blit(sprite, (loc2[0] + i * 24, loc2[1]))
 
 
