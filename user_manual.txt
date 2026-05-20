@@ -1,0 +1,33 @@
+THIS IS THE MANUAL ON HOW TO PLAY THE GAME
+
+
+To make the game run, you must use the following command:
+
+./pac-man config.json
+
+*config.json is your file containing all the necesary informations to initialize the game.
+By default it is named **config.json**.
+
+
+Once the program launched, you will see 4 sections:
+    - Play: Start the game
+    - Guide: Give the player commands
+    - Score: Show the leaderboard (The top 10 highscores)
+    - Exit: Exit the game
+
+
+There are mandatory keys for config.json:
+    - width: an integer ranged from 11 to 15
+    - height: an integer ranged from 11 to 15
+    - highscore_filename: The name of the leaderboard file, must be a .json
+    - lives: a positive integer
+    - pacgums: a positive integer
+    - points_per_pacgum: a positive integer
+    - points_per_super_pacgum: a positive integer
+    - points_per_ghost: a positive integer
+    - seed: a positive integer or 0 if you want first level to also be random
+    - level_max_time: a positive integer
+    - level: a positive integer
+
+
+H jlyahpu jvtipuhapvu vm puwbaz busvjr h uld tlub..

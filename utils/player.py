@@ -1,7 +1,7 @@
 import pygame as pg
 import time
-from pacgums import Pacgums
-from ghost import Ghost
+from utils.pacgums import Pacgums
+from utils.ghost import Ghost
 from typing import Tuple, Dict, List
 
 

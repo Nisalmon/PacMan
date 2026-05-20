@@ -1,0 +1,43 @@
+This is the management file. Where all about this project will be written in plural categories.
+
+
+Workers:
+    - nisalmon
+    - erifflar
+
+
+Work Repartition:
+    - nisalmon:
+        - game routine
+        - menus
+        - Player/Button class
+        - utils
+
+    - erifflar:
+        - sprite
+        - Ghost class
+        - utils
+
+
+Trials and errors:
+    - Ghost movements:
+        We encountered lots and lots of errors when trying to do the ghost move.
+        Since we are moving the players and ghosts based on their speed and the fps, sometimes
+        ghosts were simply not moving or stucking themselves onto walls.
+    - Maze:
+        When it was time to put the level onto the screen, we had issues and found out the method we were
+        using was nowhere near the right way so **erifflar** ended up redoing the entire thing.
+        An example of what was wrong is that sometimes walls were overlapping and sometimes not in the
+        right place.
+    - Respawn mechanic:
+        We wanted a respawn as close as the pacman one. Which mean when you die, everything is set back to
+        their spawn and, after a countdown of 3 seconds, the game goes on.
+        The problem **nisalmon** had was when dying, the game froze directly, and after the countdown, unfroze
+        and respawn everything.
+
+
+Finished project:
+    For this project we really wanted to stay as close as possible to the original Pacman but soon enough,
+    we found out that it wouldn't be as easy as we could've thought.
+    So we tried our best and it turned out pretty great, our project is not completely like the original Pacman
+    but we are proud of it and that's what matters.

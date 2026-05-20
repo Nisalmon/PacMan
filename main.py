@@ -2,19 +2,19 @@ import sys
 from mazegenerator import MazeGenerator
 import pygame as pg
 import os
-from config import load_config, check_conf
-from player import init_player, Player
-from pacgums import load_pacgums, Pacgums
-from maze_visu import build_maze_visu
-from ghost import move_all_ghosts, init_ghosts, Ghost
-from game_end import time_out, game_over, win_screen
+from utils.config import load_config, check_conf
+from utils.player import init_player, Player
+from utils.pacgums import load_pacgums, Pacgums
+from utils.maze_visu import build_maze_visu
+from utils.ghost import move_all_ghosts, init_ghosts, Ghost
+from utils.game_end import time_out, game_over, win_screen
 from utils import (draw_env, print_all, print_countdown, print_paused,
                    end_game_print, get_leaderboard, get_username, load_walls,
                    load_pygame, load_sounds, enter_input, enable_cheats,
                    init_cheats, get_cheats, activate_cheats, game_over_print,
                    congrats_print, print_guide)
-from buttons import init_buttons, draw_button, cheat_button
-from scorers import load_scorers, fill_scorers
+from utils.buttons import init_buttons, draw_button, cheat_button
+from utils.scorers import load_scorers, fill_scorers
 import time
 from typing import Tuple, List, Dict
 
@@ -107,7 +107,11 @@ def main(argv: List[str]) -> None:
         inputs: List[str] = []
         cheat = False
         cheats = init_cheats()
+        icon = pg.image.load("./sprite/Icon.png")
+        title = pg.transform.scale(pg.image.load("./sprite/Title.png"),
+                                   (600, 200))
         pg.display.set_caption("PACMAN")
+        pg.display.set_icon(icon)
     except Exception as e:
         raise Exception(e)
     while running:
@@ -129,6 +133,7 @@ def main(argv: List[str]) -> None:
         if state == "menu":
             level = 0
             screen.fill((0, 0, 60))
+            screen.blit(title, (win_size[0] / 4, win_size[1] / 4))
             sounds['main'].play(-1)
             running = enter_input(inputs, running)
             if not cheat and enable_cheats(inputs):

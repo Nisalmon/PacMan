@@ -1,8 +1,8 @@
 import pygame as pg
 from typing import Dict, List, Tuple, Any
-from pacgums import Pacgums
-from player import Player
-from ghost import Ghost
+from utils.pacgums import Pacgums
+from utils.player import Player
+from utils.ghost import Ghost
 
 
 TILE_SIZE = 32

@@ -5,11 +5,11 @@ from typing import Tuple, Dict, Any
 class Button:
     def __init__(self, x: int, y: int, name: str) -> None:
         self.name = name
-        self.x = x
-        self.y = y
         self.width = 160
         self.height = 100
-        self.rect = pg.rect.Rect(x - self.width/4, y - self.height/4,
+        self.x = x - self.width // 2
+        self.y = y
+        self.rect = pg.rect.Rect(self.x - self.width/4, self.y - self.height/4,
                                  self.width, self.height)
         self.color = (127, 127, 127)
 
@@ -56,7 +56,7 @@ def draw_button(buttons: Dict[str, Button],
 def cheat_button(buttons: Dict[str, Button], size: Tuple[int, int]) -> None:
     buttons.update(
         {
-            "cheat": Button(((size[0] - 48) // 2),
+            "cheat": Button(((size[0] + 124) // 2),
                             ((size[1] + 424) // 2),
                             "Cheat")
         }

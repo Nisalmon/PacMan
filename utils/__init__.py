@@ -5,6 +5,8 @@ from .utils_print import (print_all, print_countdown, print_paused,
 from .environment import draw_env
 from .loaders import load_pygame, load_sounds, load_walls
 from .cheat import enter_input, enable_cheats, init_cheats, activate_cheats
+from .config import load_config, check_conf
+from .game_end import time_out, win_screen, game_over
 
 
 __all__ = [
@@ -25,5 +27,10 @@ __all__ = [
     "activate_cheats",
     "congrats_print",
     "game_over_print",
-    "print_guide"
+    "print_guide",
+    "load_config",
+    "check_conf",
+    "time_out",
+    "win_screen",
+    "game_over",
 ]
