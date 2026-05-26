@@ -93,7 +93,8 @@ def main(argv: List[str]) -> None:
         pacgums: List[Pacgums] = []
         if (load_pacgums(pacgums, int(conf['pacgums']),
                          hex_maze, visu, conf)) == 0:
-            return
+            load_pacgums(pacgums, int(conf['pacgums']),
+                         hex_maze, visu, conf)
         scr_snd = False
         buttons = init_buttons(win_size)
         timer = time.time()

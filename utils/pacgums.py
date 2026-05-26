@@ -25,7 +25,8 @@ def load_pacgums(pacgums: List[Pacgums],
                for _ in range(len(maze_hexa))]
     if nb_pacgums > len(visited) * len(visited[0]):
         print("Cannot add all of the pacgums..")
-        return 0
+        print("clamped to 100")
+        nb_pacgums = 100
     cnt = 0
     super_pac_loc = [
         (1, 1),
