@@ -3,6 +3,15 @@ from typing import Dict
 
 
 def load_scorers(score_loc: str) -> Dict[str, int]:
+    """
+    To load scorers
+
+    :params:
+        - score_loc : the score loc
+
+    :returns:
+        Dict : to stock the result
+    """
     scores: Dict[str, int] = {}
     try:
         with open(score_loc, "r") as f:
@@ -15,6 +24,16 @@ def load_scorers(score_loc: str) -> Dict[str, int]:
 def fill_scorers(scorers: Dict[str, int],
                  user: Dict[str, int],
                  score_loc: str) -> Dict[str, int]:
+    """
+    To fill the scorers stats
+
+    :params:
+        - scorers : the scorers stats
+
+        - users : the name of the users
+
+        - score_loc : the placement on the top
+    """
     scorers.update(user)
     n_scorers = {k: v for k, v in sorted(scorers.items(),
                                          key=lambda item: item[1],

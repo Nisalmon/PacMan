@@ -10,6 +10,18 @@ TILE_SIZE = 32
 
 def draw_maze(screen: pg.Surface, visu: List[List[int]],
               walls: Dict[str, Any], scale: Tuple[int, int]) -> None:
+    """
+    To print the maze in the screen
+
+    :params:
+        - screen : the pygame screen
+
+        - visu : the maze visu
+
+        - walls : Dict that contains sprites for the walls
+
+        - scale : The scaling
+    """
     rotated_wall_90 = pg.transform.rotate(walls['wall'], 90)
     rotated_wall_180 = pg.transform.rotate(walls['wall'], 180)
     rotated_wall_270 = pg.transform.rotate(walls['wall'], 270)
@@ -69,11 +81,27 @@ def draw_maze(screen: pg.Surface, visu: List[List[int]],
 
 
 def draw_pacgums(pacgums: List[Pacgums], screen: pg.Surface) -> None:
+    """
+    To draw in the screen the pacgums
+
+    :params:
+        - pacgums : the list of all pacgums
+
+        - screen : pygame screen
+    """
     for elem in pacgums:
         screen.blit(elem.sprite, (elem.x, elem.y))
 
 
 def draw_ghosts(screen: pg.Surface, ghosts: Dict[str, Ghost]) -> None:
+    """
+    To draw the ghost in the pygame screen
+
+    :params:
+        - screen : pygame screen
+
+        - ghosts : the list of all the ghost
+    """
     for _, value in ghosts.items():
         screen.blit(value.sprite, (value.x, value.y))
 
@@ -81,6 +109,24 @@ def draw_ghosts(screen: pg.Surface, ghosts: Dict[str, Ghost]) -> None:
 def draw_env(screen: pg.Surface, visu: List[List[int]], walls: Dict[str, Any],
              pacgums: List[Pacgums], ghosts: Dict[str, Ghost],
              player: Player, scale: Tuple[int, int]) -> None:
+    """
+    To print all the sprite in the game
+
+    :params:
+        - screen : pygame screen
+
+        - visu : the maze visu
+
+        - walls : list that contains all the sprites for the wall
+
+        - pacgums : the list of all the pacgums
+
+        - ghosts : Dict that contains all the ghosts
+
+        - player : The player class
+
+        - scale : the scaling of the maze
+    """
     draw_maze(screen, visu, walls, scale)
     draw_pacgums(pacgums, screen)
     draw_ghosts(screen, ghosts)

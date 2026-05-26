@@ -3,6 +3,17 @@ from typing import Dict, List
 
 
 def enter_input(inputs: List[str], running: bool) -> bool:
+    """
+    To convert the input of the user
+
+    :params:
+        - inputs : pygame's input
+
+        - running : To start or stop the game cycle
+
+    :returns:
+        Bool : The game cycle state
+    """
     for event in pg.event.get():
         if event.type == pg.QUIT and running:
             running = False
@@ -22,6 +33,17 @@ def enter_input(inputs: List[str], running: bool) -> bool:
 
 
 def enable_cheats(cheat_code: List[str]) -> bool:
+    """
+    To check if the input is correct to start the cheat mode
+
+    :params:
+        - cheat_code :  The list contains all input
+                        that the user input in the
+                        main menu
+
+    :returns:
+        Bool : The check result
+    """
     correct_cheat = [
         "UP", "UP", "DOWN", "DOWN",
         "LEFT", "RIGHT", "LEFT", "RIGHT",
@@ -34,6 +56,12 @@ def enable_cheats(cheat_code: List[str]) -> bool:
 
 
 def init_cheats() -> Dict[str, bool]:
+    """
+    To init all the cheats
+
+    :returns:
+        Dict : cheats
+    """
     cheats = {
         "Invincibility": False,
         "Ghost Freeze": False,
@@ -43,6 +71,12 @@ def init_cheats() -> Dict[str, bool]:
 
 
 def activate_cheats(cheats: Dict[str, bool]) -> None:
+    """
+    To active cheats
+
+    :params:
+        - cheats : All the cheats informations
+    """
     for event in pg.event.get():
         if event.type == pg.KEYDOWN:
             keys = pg.key.get_pressed()

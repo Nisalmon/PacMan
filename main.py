@@ -24,6 +24,17 @@ TILE_SIZE = 32
 
 def get_scale(maze_len: Tuple[int, int],
               maze_size: Tuple[int, int]) -> Tuple[int, int]:
+    """
+    To retrieve the scale value
+
+    :params:
+        - maze_len : to get the base len of the maze
+
+        - maze_size : to get the scaling len of the maze
+
+    :returns:
+        Tuple : get the scale value
+    """
     x = maze_size[0]/maze_len[0]/TILE_SIZE
     y = maze_size[1]/maze_len[1]/TILE_SIZE
     x = int(x)
@@ -32,6 +43,15 @@ def get_scale(maze_len: Tuple[int, int],
 
 
 def convert_maze(maze: List[List[int]]) -> List[List[str]]:
+    """
+    To get a hexa version of the maze
+
+    :params:
+        - maze : the maze based to 0-15
+
+    :returns:
+        List : The converted maze
+    """
     n_maze = []
     hexa = "0123456789ABCDEF"
     for lst in maze:
@@ -46,6 +66,24 @@ def respawn(player: Player, ghosts: Dict[str, Ghost],
             loc: Tuple[int, int], conf: Dict[str, int | str],
             visu: List[List[str]], maze_hexa: List[List[str]],
             scale: Tuple[int, int]) -> None:
+    """
+    To restart at the base position
+
+    :params:
+        - player : Class player
+
+        - ghosts : To get all the ghosts informations
+
+        - loc : To retrieve the pixel position
+
+        - visu : The maze with wall break
+
+        - conf : The pygame config
+
+        - maze_hexa : The maze in hexa
+
+        - scale : The scaling maze
+    """
     player.x, player.y = loc
     player.direction = []
     ghosts.clear()

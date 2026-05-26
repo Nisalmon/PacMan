@@ -12,9 +12,41 @@ HALF_PLAYER = 24 // 2
 
 
 class Player:
+    """
+    Class for the player
+
+    :methods:
+        - get_scale : to get the scale
+
+        - get_sprite : to get the sprite
+
+        - move_player : To move the player in the maze
+
+        - can_move : check if the player can move to the next direction
+
+        - eat_pacgums : To simulate the eat of the pacgum
+
+        - get_tolerance : To get the tolerance
+
+        - touch_ghost : Check if the player collide a ghost
+    """
     def __init__(self, x: int, y: int,
                  sprite_loc: str, lives: int,
                  scale: int) -> None:
+        """
+        To initialize the player
+
+        :params:
+            - x : x position of the player
+
+            - y : y position of the player
+
+            - sprite_loc : location of the sprite sheet
+
+            - lives : number of lives
+
+            - scale : scaling size of the player
+        """
         self.x: float = x
         self.y: float = y
         self._sheet = pg.image.load(sprite_loc).convert_alpha()
@@ -35,6 +67,14 @@ class Player:
         self.just_respawned = False
 
     def get_scale(self, scale: int) -> Tuple[float, float]:
+        """
+        To calculate the sprite scale
+
+        :params:
+            - scale : the scaling required
+        :returns:
+            tuple : the scaling maze
+        """
         wall_size_x = 32 * scale
         size = 31.25 * wall_size_x // 100 + 4
         return (size, size)
@@ -44,6 +84,17 @@ class Player:
                                                                       255,
                                                                       255)
                    ) -> pg.Surface:
+        """
+        To get the sprite
+
+        :params:
+            - loc : the coordinate of the sprite
+
+            - colorkey : the color
+
+        :returns:
+            Surface : the sprite
+        """
         x = loc[1] * self._sprite_size[0]
         y = loc[0] * self._sprite_size[1]
 
@@ -57,6 +108,14 @@ class Player:
         return pg.transform.scale(img, self._scaled)
 
     def move_player(self, dt: float, visu: List[List[str]]) -> None:
+        """
+        To move the ghost depending on the user input
+
+        :params:
+            - dt : delta for the speed of the current game
+
+            - visu : the maze visu
+        """
         keys = pg.key.get_pressed()
         dir = self.direction[0] if self.direction else ""
         dir2 = (self.can_move(self.direction[1], dt, visu)
@@ -121,6 +180,16 @@ class Player:
                     pacgums: List[Pacgums],
                     ghosts: Dict[str, Ghost],
                     eat: pg.mixer.Sound) -> None:
+        """
+        To get the state of the pacgums eated
+
+        :params:
+            - pacgums : list of all the pacgums
+
+            - ghosts : the list of all the ghosts
+
+            - eat : sound for the eated gum
+        """
         for gum in pacgums:
             if (abs(self.x - gum.x) < 7 and
                abs(self.y - gum.y) < 7):
@@ -136,6 +205,15 @@ class Player:
 
     def can_move(self, dir: str, dt: float,
                  visu: List[List[str]]) -> bool:
+        """
+        To check the next pixel move
+
+        :params:
+            - scale : the scaling required
+
+        :returns:
+            Bool : To know if we collide with a wall or not
+        """
         check_x: float = round(self.x)
         check_y: float = round(self.y)
 
@@ -167,10 +245,22 @@ class Player:
                 visu[grid_y4][grid_x4] == " ")
 
     def get_tolerance(self) -> float:
+        """
+        To get the tolerance
+
+        :returns:
+            float : the tolerance
+        """
         tol = self.tile_size/2 - 3 * (self.tile_size/2)/32
         return tol
 
     def touch_ghost(self, ghosts: Dict[str, Ghost]) -> None:
+        """
+        To check the if the player collide a ghost
+
+        :params:
+            - ghosts : Dict of all the ghosts
+        """
         for _, value in ghosts.items():
             if (abs(self.x - value.x) < 15 and
                abs(self.y - value.y) < 15 and
@@ -193,4 +283,22 @@ def init_player(x: int,
                 sprite: str,
                 lives: int,
                 scale: int) -> Player:
+    """
+        To init player
+
+        :params:
+            - x: int
+
+            - y: int
+
+            - sprite: str
+
+            - lives: int
+
+            - scale: iny
+
+
+        :returns:
+            Player : create player
+        """
     return Player(x, y, sprite, lives, scale)

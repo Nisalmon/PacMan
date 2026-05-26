@@ -5,6 +5,15 @@ TILE_SIZE = 32
 
 
 def build_maze_visu(maze: List[List[str]]) -> List[List[str]]:
+    """
+    To build the maze visu
+
+    :params:
+        - maze : the maze
+
+    :returns:
+        List : the maze with full block
+    """
     visu = [["█" for _ in range(len(maze[0]) * 2 + 1)]
             for _ in range(len(maze) * 2 + 1)]
     for i in range(len(maze[0])):
@@ -15,6 +24,15 @@ def build_maze_visu(maze: List[List[str]]) -> List[List[str]]:
 
 def break_walls(visu: List[List[str]],
                 maze: List[List[str]]) -> List[List[str]]:
+    """
+    To build the maze visu
+
+    :params:
+        - maze : the maze
+
+    :returns:
+        List : the maze with wall break
+    """
     for i in range(len(maze[0])):
         for j in range(len(maze)):
             if maze[j][i] == '1':

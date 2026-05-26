@@ -4,6 +4,15 @@ from typing import Tuple, Dict, Any
 
 
 def load_pygame(size: Tuple[int, int]) -> Dict[str, Any]:
+    """
+    To start pygame
+
+    :params:
+        - size : the size of the maze
+
+    :returns:
+        Dict : screen config
+    """
     screen_conf: Dict[str, Any] = {}
     pg.init()
     pg.display.init()
@@ -16,6 +25,12 @@ def load_pygame(size: Tuple[int, int]) -> Dict[str, Any]:
 
 
 def load_sounds() -> Dict[str, Any]:
+    """
+    To load the sounds
+
+    :returns:
+        Dict : all the sounds
+    """
     snd = {
         "main": pg.mixer.Sound("./sounds/main_menu.mp3"),
         "waka": pg.mixer.Sound("./sounds/wakawaka.mp3"),
@@ -25,6 +40,15 @@ def load_sounds() -> Dict[str, Any]:
 
 
 def load_walls(scale: Tuple[int, int]) -> Dict[str, Any]:
+    """
+    To load sprite wall
+
+    :params:
+        - scale : the scaling of the maze
+
+    :returns:
+        Dict : The walls
+    """
     wall_sprite = pg.transform.scale_by(
         pg.image.load("sprite/Wall.png").convert_alpha(),
         scale

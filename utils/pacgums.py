@@ -4,8 +4,25 @@ from typing import List, Any, Dict
 
 
 class Pacgums:
+    """
+    Class for pacgums
+    """
     def __init__(self, x: int, y: int, score: int,
                  _type: str = "normal") -> None:
+        """
+        To init attributs
+
+        :attributs:
+            - x : the x position for the pacgums
+
+            - y : the y position for the pacgums
+
+            - _type : type of the pacgum
+
+            - score : the score
+
+            - sprite : the sprite to load
+        """
         self.x = x
         self.y = y
         self._type = _type
@@ -21,6 +38,23 @@ def load_pacgums(pacgums: List[Pacgums],
                  maze_hexa: List[List[str]],
                  visu: List[List[str]],
                  conf: Dict[str, Any]) -> int:
+    """
+    To load pacgums
+
+    :params:
+        - pacgums : the pacgums
+
+        - nb_pacgums : the number of pacgums
+
+        - maze_hexa : the maze in hexa
+
+        - visu : the maze visu
+
+        - conf : the sprite to load
+
+    :returns:
+        Int : to know if the process failed or not
+    """
     visited = [[False for _ in range(len(maze_hexa[0]))]
                for _ in range(len(maze_hexa))]
     if nb_pacgums > len(visited) * len(visited[0]):

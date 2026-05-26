@@ -11,11 +11,93 @@ DEFAULT_SCALE = 24
 
 
 class Ghost:
+    """
+    Class for the ghost
+
+    :methods:
+        - get_scale : to get the scale
+
+        - load_sprite_sheet : load all the sprite
+
+        - get_sprite : to get the sprite
+
+        - set_algo : apply the correct algo to the ghost
+
+        - algo_blinky : the BFS algorithm
+
+        - move_ghost : To move the ghost in the maze
+
+        - can_move : check if the ghost can move to the next direction
+
+        - get_pinky_target : To get the next target of pinky
+
+        - get_inky_target : To get the next target of inky
+
+        - get_rand_target : To get a random target
+
+        - get_tolerance : to get the tolerance
+    """
     def __init__(self,
                  name: str, score: int, visu: List[List[str]],
                  maze_hexa: List[List[str]], x: int, y: int,
                  scale: int, tile_size: int, target: Any,
                  red: Ghost | None) -> None:
+        """
+        To init attributs
+
+        :attributs:
+            - __name: str
+
+            - score: int
+
+            - x: float
+
+            - y: float
+
+            - state: str
+
+            - afraid_timer: int
+
+            - edible: bool
+
+            - _sprite_size: tuple
+
+            - _scaled: tuple
+
+            - tile_size: int
+
+            - tile_scale: int
+
+            - _sheet: Surface
+
+            - sprite: Surface
+
+            - spawn: tuple
+
+            - path: List[str]
+
+            - previous: str
+
+            - __visu: List[List[str]]
+
+            - __maze_hexa: List[List[str]]
+
+            - target: Any
+
+            - speed: float
+
+            - red: Ghost | None
+
+            - anim_timer: float
+
+            - anim_speed: float
+
+            - sprite_increment: int
+
+            - sprite_index: int
+
+            - rand_target: tuple
+        """
         self.__name = name
         self.score = score
         self.x: float = x
@@ -45,11 +127,25 @@ class Ghost:
         self.rand_target = self.get_rand_target(self.__maze_hexa, self.__visu)
 
     def get_scale(self, scale: int) -> Tuple[float, float]:
+        """
+        To calculate the sprite scale
+
+        :params:
+            - scale : the scaling required
+        :returns:
+            tuple : the scaling maze
+        """
         wall_size_x = 32 * scale
         size = 31.25 * wall_size_x // 100 + 4
         return (size, size)
 
     def load_sprite_sheet(self) -> pg.Surface:
+        """
+        To calculate the sprite scale
+
+        :returns:
+            Surface : The loaded sprite sheet
+        """
         if self.state == "afraid":
             return pg.image.load("./sprite/afraid.png").convert_alpha()
         elif self.state == "dead":
@@ -68,6 +164,17 @@ class Ghost:
                               Tuple[int, int, int] |
                               int) = (255, 255, 255)
                    ) -> pg.Surface:
+        """
+        To get the sprite
+
+        :params:
+            - loc : the coordinate of the sprite
+
+            - colorkey : the color
+
+        :returns:
+            Surface : the sprite
+        """
         x = loc[1] * self._sprite_size[0]
         y = loc[0] * self._sprite_size[1]
         if self.state == "afraid":
@@ -83,6 +190,12 @@ class Ghost:
         return pg.transform.scale(img, self._scaled)
 
     def set_algo(self, target: Tuple[int, int]) -> None:
+        """
+        To calculate the sprite scale
+
+        :params:
+            - scale : the scaling required
+        """
         if self.state == "chase":
             if self.__name == "blinky":
                 self.path = self.algo_blinky(target)
@@ -131,6 +244,15 @@ class Ghost:
                 self._sheet = self.load_sprite_sheet()
 
     def algo_blinky(self, target: Tuple[int, int]) -> List[str]:
+        """
+        To calculate the shortest path for Blinky
+
+        :params:
+            - target : target position in the maze
+
+        :returns:
+            List : list of directions to reach the target
+        """
         queue: Deque[Tuple[int, ...]] = deque()
         visited = set()
         parent = {}
@@ -179,6 +301,12 @@ class Ghost:
         return path
 
     def move_ghost(self, dt: float) -> None:
+        """
+        To move the ghost depending on the user input
+
+        :params:
+            - dt : delta for the speed of the current game
+        """
         ht = self.tile_size/2
         target = (
                     int((self.target.x + self._scaled[0] / 2) // ht),
@@ -234,6 +362,15 @@ class Ghost:
 
     def can_move(self, dir: str,
                  dt: float, visu: List[List[str]]) -> bool:
+        """
+        To check the next pixel move
+
+        :params:
+            - scale : the scaling required
+
+        :returns:
+            Bool : To know if we collide with a wall or not
+        """
         check_x = self.x
         check_y = self.y
 
@@ -263,6 +400,12 @@ class Ghost:
                 visu[grid_y4][grid_x4] == " ")
 
     def get_tolerance(self) -> float:
+        """
+        To get the tolerance
+
+        :returns:
+            float : the tolerance
+        """
         tol = self.tile_size/2 - 2 * (self.tile_size/2)/32
         return tol
 
@@ -270,6 +413,21 @@ class Ghost:
                         pac_pos: Tuple[int, int],
                         pac_dir: str,
                         visu: List[List[str]]) -> Tuple[int, int]:
+        """
+        To calculate the target for inky
+
+        :params:
+            - red_pos : The red ghost actual position
+
+            - pac_pos : the actual pacman position
+
+            - pac_dir : the actual direction of pacman
+
+            - visu : the maze visu
+
+        :returns:
+            Tuple : The target for inky
+        """
         pac_x, pac_y = pac_pos
         red_x, red_y = red_pos
         pivot_x, pivot_y = (pac_x, pac_y)
@@ -308,6 +466,19 @@ class Ghost:
     def get_pinky_target(self, pac_pos: Tuple[int, int],
                          pac_dir: str,
                          visu: List[List[str]]) -> Tuple[int, int]:
+        """
+        To calculate the target for pinky
+
+        :params:
+            - pac_pos : the actual pacman position
+
+            - pac_dir : the actual direction of pacman
+
+            - visu : the maze visu
+
+        :returns:
+            Tuple : The target for pinky
+        """
         pac_x, pac_y = pac_pos
         pivot_x, pivot_y = (pac_x, pac_y)
         if pac_dir:
@@ -343,6 +514,17 @@ class Ghost:
 
     def get_rand_target(self, maze_hexa: List[List[str]],
                         visu: List[List[str]]) -> Tuple[int, int]:
+        """
+        To calculate a random target
+
+        :params:
+            - maze_hexa : the maze in hexa
+
+            - visu : the maze visu
+
+        :returns:
+            Tuple : A random target
+        """
         while True:
             x = random.randint(0, len(visu[0]) - 1)
             y = random.randint(0, len(visu) - 1)
@@ -358,6 +540,17 @@ def init_ghosts(conf: Dict[str, str | int],
                 pacman: Any,
                 maze_hexa: List[List[str]],
                 scale: int) -> Dict[str, Ghost]:
+    """
+    To calculate a random target
+
+    :params:
+        - maze_hexa : the maze in hexa
+
+        - visu : the maze visu
+
+    :returns:
+        Tuple : A random target
+    """
     w = int(conf['width'])
     h = int(conf['height'])
     tile = 32 * scale
@@ -379,11 +572,32 @@ def init_ghosts(conf: Dict[str, str | int],
 
 
 def move_all_ghosts(ghosts: Dict[str, Ghost], dt: float) -> None:
+    """
+    To calculate the target for pinky
+
+    :params:
+        - ghosts : dict that contains all ghosts
+
+        - dt : speed of the current game
+    """
     for _, value in ghosts.items():
         value.move_ghost(dt)
 
 
 def scared_ghost(ghosts: Dict[str, Ghost]) -> bool:
+    """
+    To know if one of the ghost is afraid
+
+    :params:
+        - pac_pos : the actual pacman position
+
+        - pac_dir : the actual direction of pacman
+
+        - visu : the maze visu
+
+    :returns:
+        Tuple : The target for pinky
+    """
     for _, gh in ghosts.items():
         if gh.state == "afraid":
             return True

@@ -3,6 +3,15 @@ from typing import Dict
 
 
 def load_config(file: str) -> Dict[str, str | int]:
+    """
+    To load the config file
+
+    :params:
+        - file : the config file
+
+    :returns:
+        Dict : Parsed informations of the file
+    """
     conf: Dict[str, int | str] = {}
     try:
         with open(file) as f:
@@ -21,6 +30,12 @@ def load_config(file: str) -> Dict[str, str | int]:
 
 
 def check_size(conf: Dict[str, str | int]) -> None:
+    """
+    To add some restricted config to the maze
+
+    :params:
+        - conf : the parsed config file
+    """
     try:
         w: int = int(conf['width'])
         h: int = int(conf['height'])
@@ -37,6 +52,12 @@ def check_size(conf: Dict[str, str | int]) -> None:
 
 
 def check_lives(conf: Dict[str, str | int]) -> None:
+    """
+    To check the lives info
+
+    :params:
+        - conf : the parsed config file
+    """
     try:
         lvs: int = int(conf['lives'])
         if lvs <= 0 or not isinstance(lvs, int):
@@ -50,6 +71,12 @@ def check_lives(conf: Dict[str, str | int]) -> None:
 
 
 def check_time(conf: Dict[str, str | int]) -> None:
+    """
+    To check the time info
+
+    :params:
+        - conf : the parsed config file
+    """
     try:
         t: int = int(conf['level_max_time'])
         if t <= 0 or not isinstance(t, int):
@@ -63,6 +90,12 @@ def check_time(conf: Dict[str, str | int]) -> None:
 
 
 def check_pacgum(conf: Dict[str, str | int]) -> None:
+    """
+    To check the pacgum info
+
+    :params:
+        - conf : the parsed config file
+    """
     try:
         pg: int = int(conf['pacgums'])
         if pg <= 0 or not isinstance(pg, int):
@@ -76,6 +109,12 @@ def check_pacgum(conf: Dict[str, str | int]) -> None:
 
 
 def check_pacgum_score(conf: Dict[str, str | int]) -> None:
+    """
+    To check the pacgum score info
+
+    :params:
+        - conf : the parsed config file
+    """
     try:
         pg: int = int(conf['points_per_pacgum'])
         if pg <= 0 or not isinstance(pg, int):
@@ -89,6 +128,12 @@ def check_pacgum_score(conf: Dict[str, str | int]) -> None:
 
 
 def check_super_pacgum_score(conf: Dict[str, str | int]) -> None:
+    """
+    To check the super pacgum score info
+
+    :params:
+        - conf : the parsed config file
+    """
     try:
         pg: int = int(conf['points_per_super_pacgum'])
         if pg <= 0 or not isinstance(pg, int):
@@ -102,6 +147,12 @@ def check_super_pacgum_score(conf: Dict[str, str | int]) -> None:
 
 
 def check_ghost_score(conf: Dict[str, str | int]) -> None:
+    """
+    To check the ghost score info
+
+    :params:
+        - conf : the parsed config file
+    """
     try:
         g: int = int(conf['points_per_ghost'])
         if g <= 0 or not isinstance(g, int):
@@ -115,6 +166,12 @@ def check_ghost_score(conf: Dict[str, str | int]) -> None:
 
 
 def check_seed(conf: Dict[str, str | int]) -> None:
+    """
+    To check the seed info
+
+    :params:
+        - conf : the parsed config file
+    """
     try:
         sd: int = int(conf['seed'])
         if sd < 0 or not isinstance(sd, int):
@@ -128,6 +185,12 @@ def check_seed(conf: Dict[str, str | int]) -> None:
 
 
 def check_highscorers(conf: Dict[str, str | int]) -> None:
+    """
+    To check the highscorers info
+
+    :params:
+        - conf : the parsed config file
+    """
     try:
         if not str(conf['highscore_filename']).endswith(".json"):
             raise Exception()
@@ -142,6 +205,12 @@ def check_highscorers(conf: Dict[str, str | int]) -> None:
 
 
 def check_level(conf: Dict[str, str | int]) -> None:
+    """
+    To check the level info
+
+    :params:
+        - conf : the parsed config file
+    """
     try:
         lvl: int = int(conf['level'])
         if lvl <= 0 or not isinstance(lvl, int):
@@ -155,6 +224,12 @@ def check_level(conf: Dict[str, str | int]) -> None:
 
 
 def check_conf(conf: Dict[str, str | int]) -> None:
+    """
+    To check the conf
+
+    :params:
+        - conf : the parsed config file
+    """
     check_size(conf)
     check_time(conf)
     check_lives(conf)
