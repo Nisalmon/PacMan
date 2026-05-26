@@ -381,3 +381,10 @@ def init_ghosts(conf: Dict[str, str | int],
 def move_all_ghosts(ghosts: Dict[str, Ghost], dt: float) -> None:
     for _, value in ghosts.items():
         value.move_ghost(dt)
+
+
+def scared_ghost(ghosts: Dict[str, Ghost]) -> bool:
+    for _, gh in ghosts.items():
+        if gh.state == "afraid":
+            return True
+    return False

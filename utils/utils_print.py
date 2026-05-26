@@ -106,7 +106,8 @@ def print_paused(screen: Dict[str, Any],
 def print_guide(screen: Dict[str, Any]) -> None:
     instr = [
         "Move using arrow keys.",
-        "In game, press ESC to pause the game."
+        "In game, press ESC to pause the game.",
+        "To go back to previous menus, press BACKSPACE."
     ]
     screen['font'].render_to(screen['screen'],
                              (0, 0),

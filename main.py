@@ -6,7 +6,7 @@ from utils.config import load_config, check_conf
 from utils.player import init_player, Player
 from utils.pacgums import load_pacgums, Pacgums
 from utils.maze_visu import build_maze_visu
-from utils.ghost import move_all_ghosts, init_ghosts, Ghost
+from utils.ghost import move_all_ghosts, init_ghosts, Ghost, scared_ghost
 from utils.game_end import time_out, game_over, win_screen
 from utils import (draw_env, print_all, print_countdown, print_paused,
                    end_game_print, get_leaderboard, get_username, load_walls,
@@ -94,6 +94,7 @@ def main(argv: List[str]) -> None:
         if (load_pacgums(pacgums, int(conf['pacgums']),
                          hex_maze, visu, conf)) == 0:
             return
+        scr_snd = False
         buttons = init_buttons(win_size)
         timer = time.time()
         lvl_timer = int(conf['level_max_time'])
@@ -174,8 +175,8 @@ def main(argv: List[str]) -> None:
                 print_all(screen_conf, maze_size, pacman.score,
                           pacman.get_sprite((0, 3),), pacman.lives,
                           lvl_timer, level + 1, int(conf["level"]))
-                pacman.eat_pacgums(pacgums, ghosts, sounds['waka'],
-                                   sounds['scared'])
+                pacman.eat_pacgums(pacgums, ghosts, sounds['waka']
+                                   )
                 if not cheats['Invincibility']:
                     pacman.touch_ghost(ghosts)
 
@@ -196,6 +197,12 @@ def main(argv: List[str]) -> None:
                         print_countdown(screen_conf,
                                         (cnt_down),
                                         win_size)
+                if scared_ghost(ghosts) and not scr_snd:
+                    sounds['scared'].play(-1)
+                    scr_snd = True
+                elif not scared_ghost(ghosts) and scr_snd:
+                    sounds['scared'].stop()
+                    scr_snd = False
                 if pacman.alive is False:
                     respawn(pacman, ghosts, spawn_loc, conf, visu,
                             hex_maze, scale)
@@ -233,6 +240,8 @@ def main(argv: List[str]) -> None:
                 paused.set_alpha(160)
                 screen.blit(paused, (0, 0))
                 pause = True
+                sounds['scared'].stop()
+                scr_snd = False
             print_paused(screen_conf, win_size)
             if keys[pg.K_TAB]:
                 state = "menu"

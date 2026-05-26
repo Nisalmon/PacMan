@@ -120,8 +120,7 @@ class Player:
     def eat_pacgums(self,
                     pacgums: List[Pacgums],
                     ghosts: Dict[str, Ghost],
-                    eat: pg.mixer.Sound,
-                    scared: pg.mixer.Sound) -> None:
+                    eat: pg.mixer.Sound) -> None:
         for gum in pacgums:
             if (abs(self.x - gum.x) < 7 and
                abs(self.y - gum.y) < 7):
@@ -130,7 +129,6 @@ class Player:
                 pacgums.pop(pacgums.index(gum))
                 if gum._type == "super":
                     for _, gh in ghosts.items():
-                        scared.play(0)
                         gh.state = "afraid"
                         gh.afraid_timer = time.time()
                         gh.edible = True
