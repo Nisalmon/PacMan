@@ -261,8 +261,11 @@ def main(argv: List[str]) -> None:
                     level += 1
                     if level == conf['level']:
                         state = "score"
+                    if win:
+                        mazegen.generate(mazegen._seed)
+                    else:
+                        mazegen.generate()
                     win = False
-                    mazegen.generate()
                     visu = build_maze_visu(convert_maze(mazegen.maze))
                     hex_maze = convert_maze(mazegen.maze)
                     lvl_timer = int(conf["level_max_time"])
@@ -284,7 +287,7 @@ def main(argv: List[str]) -> None:
             print_paused(screen_conf, win_size)
             if keys[pg.K_TAB]:
                 state = "menu"
-                mazegen.generate()
+                mazegen.generate(mazegen._seed)
                 visu = build_maze_visu(convert_maze(mazegen.maze))
                 hex_maze = convert_maze(mazegen.maze)
                 respawn(pacman, ghosts, spawn_loc, conf,
