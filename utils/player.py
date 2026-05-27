@@ -109,7 +109,7 @@ class Player:
 
     def move_player(self, dt: float, visu: List[List[str]]) -> None:
         """
-        To move the ghost depending on the user input
+        To move the player depending on the user input
 
         :params:
             - dt : delta for the speed of the current game
@@ -181,14 +181,14 @@ class Player:
                     ghosts: Dict[str, Ghost],
                     eat: pg.mixer.Sound) -> None:
         """
-        To get the state of the pacgums eated
+        To check if a pacgum is eaten
 
         :params:
             - pacgums : list of all the pacgums
 
             - ghosts : the list of all the ghosts
 
-            - eat : sound for the eated gum
+            - eat : sound for the eaten gum
         """
         for gum in pacgums:
             if (abs(self.x - gum.x) < 7 and
@@ -209,7 +209,11 @@ class Player:
         To check the next pixel move
 
         :params:
-            - scale : the scaling required
+            - dir: str, the direction the ghost wants to move
+
+            - dt: float, delta for the speed of the current game
+
+            - visu: List[List], the visualization of the maze
 
         :returns:
             Bool : To know if we collide with a wall or not

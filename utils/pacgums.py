@@ -19,7 +19,7 @@ class Pacgums:
 
             - _type : type of the pacgum
 
-            - score : the score
+            - score : the score the pacgum gives when eaten
 
             - sprite : the sprite to load
         """
@@ -50,7 +50,7 @@ def load_pacgums(pacgums: List[Pacgums],
 
         - visu : the maze visu
 
-        - conf : the sprite to load
+        - conf : The config initialized at the beginning
 
     :returns:
         Int : to know if the process failed or not

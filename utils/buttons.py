@@ -7,7 +7,7 @@ class Button:
     Class to include type of button to the game
 
     :methods:
-     - mouse_in_rect : to check where the mouse is
+     - mouse_in_rect : to check if the mouse is overing a button
 
      - clicked : check the mouse left-click
     """
@@ -33,7 +33,7 @@ class Button:
 
     def mouse_in_rect(self) -> bool:
         """
-        To get true if the mouse is in the rect
+        To get if the mouse is in the rect
 
         :returns:
             True or False
@@ -48,7 +48,7 @@ class Button:
 
     def clicked(self) -> bool:
         """
-        To check if the mouse clicked
+        To check if the button is clicked
 
         :returns:
             True or False
@@ -62,10 +62,10 @@ def init_buttons(size: Tuple[int, int]) -> Dict[str, Button]:
     To create all butoon needed
 
     :params:
-        - size : the scaling maze
+        - size : the window's size
 
     :returns:
-        Dict :  all buttons that was created
+        Dict :  all buttons that were created
     """
     buttons = {
         "main": Button(((size[0] - 48) // 2), ((size[1] - 24) // 2), "Play"),
@@ -82,7 +82,7 @@ def init_buttons(size: Tuple[int, int]) -> Dict[str, Button]:
 def draw_button(buttons: Dict[str, Button],
                 screen_conf: Dict[str, Any]) -> None:
     """
-    To get the representation of the button
+    To display the buttons on the screen
 
     :params:
         - buttons : Dict contain all button
@@ -102,7 +102,7 @@ def draw_button(buttons: Dict[str, Button],
 
 def cheat_button(buttons: Dict[str, Button], size: Tuple[int, int]) -> None:
     """
-    To get the cheat button
+    To add the cheat button
 
     :params:
         - buttons : Dict contain different buttons

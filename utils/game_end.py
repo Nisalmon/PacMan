@@ -3,7 +3,7 @@ from typing import Dict, Any, Tuple
 
 def time_out(timer: int) -> bool:
     """
-    To stop the running game if the timer run out
+    To stop the running game if the timer ran out
 
     :params:
         - timer : actual time
@@ -33,7 +33,7 @@ def game_over(screen: Dict[str, Any], size: Tuple[int, int]) -> None:
 
 def win_screen(screen: Dict[str, Any], size: Tuple[int, int]) -> None:
     """
-    To draw the screen
+    To draw the win screen
 
     :params:
         - screen : pygame screen

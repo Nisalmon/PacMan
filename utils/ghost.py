@@ -194,7 +194,7 @@ class Ghost:
         To calculate the sprite scale
 
         :params:
-            - scale : the scaling required
+            - target: x and y coords of the target
         """
         if self.state == "chase":
             if self.__name == "blinky":
@@ -245,7 +245,10 @@ class Ghost:
 
     def algo_blinky(self, target: Tuple[int, int]) -> List[str]:
         """
-        To calculate the shortest path for Blinky
+        To calculate the shortest path for Blinky (
+            Every ghost uses it to get their shortest path
+            to their target.
+        )
 
         :params:
             - target : target position in the maze
@@ -302,7 +305,7 @@ class Ghost:
 
     def move_ghost(self, dt: float) -> None:
         """
-        To move the ghost depending on the user input
+        To move the ghost every frame
 
         :params:
             - dt : delta for the speed of the current game
@@ -366,7 +369,11 @@ class Ghost:
         To check the next pixel move
 
         :params:
-            - scale : the scaling required
+            - dir: str, the direction the ghost wants to move
+
+            - dt: float, delta for the speed of the current game
+
+            - visu: List[List], the visualization of the maze
 
         :returns:
             Bool : To know if we collide with a wall or not
@@ -541,15 +548,21 @@ def init_ghosts(conf: Dict[str, str | int],
                 maze_hexa: List[List[str]],
                 scale: int) -> Dict[str, Ghost]:
     """
-    To calculate a random target
+    To initialize all the ghosts
 
     :params:
-        - maze_hexa : the maze in hexa
+        - conf: Dict of the config initialized at the beginning
 
-        - visu : the maze visu
+        - visu: List[List] of the maze in text
+
+        - pacman: Any, The player
+
+        - maze_hexa: list[List] of the maze in hexa
+
+        - scale: int, The scale of the tiles
 
     :returns:
-        Tuple : A random target
+        Dict containing all the ghosts
     """
     w = int(conf['width'])
     h = int(conf['height'])
@@ -573,7 +586,7 @@ def init_ghosts(conf: Dict[str, str | int],
 
 def move_all_ghosts(ghosts: Dict[str, Ghost], dt: float) -> None:
     """
-    To calculate the target for pinky
+    To move all the ghosts
 
     :params:
         - ghosts : dict that contains all ghosts
@@ -589,14 +602,10 @@ def scared_ghost(ghosts: Dict[str, Ghost]) -> bool:
     To know if one of the ghost is afraid
 
     :params:
-        - pac_pos : the actual pacman position
-
-        - pac_dir : the actual direction of pacman
-
-        - visu : the maze visu
+        - ghosts : dict that contains all ghosts
 
     :returns:
-        Tuple : The target for pinky
+        bool, true if a ghost is afraid false if none of them is afraid
     """
     for _, gh in ghosts.items():
         if gh.state == "afraid":

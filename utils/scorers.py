@@ -25,14 +25,17 @@ def fill_scorers(scorers: Dict[str, int],
                  user: Dict[str, int],
                  score_loc: str) -> Dict[str, int]:
     """
-    To fill the scorers stats
+    To fill the scorers file
 
     :params:
         - scorers : the scorers stats
 
-        - users : the name of the users
+        - users : the name of the user
 
-        - score_loc : the placement on the top
+        - score_loc : the score_file path
+
+    :return:
+        - Dict : the highest scorers
     """
     scorers.update(user)
     n_scorers = {k: v for k, v in sorted(scorers.items(),

@@ -25,13 +25,15 @@ def build_maze_visu(maze: List[List[str]]) -> List[List[str]]:
 def break_walls(visu: List[List[str]],
                 maze: List[List[str]]) -> List[List[str]]:
     """
-    To build the maze visu
+    To break walls in the maze
 
     :params:
-        - maze : the maze
+        - visu : the visualization of the maze
+
+        - maze : the maze in hexa
 
     :returns:
-        List : the maze with wall break
+        List : the maze with broken walls
     """
     for i in range(len(maze[0])):
         for j in range(len(maze)):

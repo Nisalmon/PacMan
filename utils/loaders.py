@@ -41,7 +41,7 @@ def load_sounds() -> Dict[str, Any]:
 
 def load_walls(scale: Tuple[int, int]) -> Dict[str, Any]:
     """
-    To load sprite wall
+    To load walls's sprites
 
     :params:
         - scale : the scaling of the maze

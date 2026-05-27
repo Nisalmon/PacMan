@@ -1,7 +1,7 @@
 [
     {"highscore_filename": "highscorers.json"},
-    {"width": 12},
-    {"height":11},
+    {"width": 15},
+    {"height":13},
     {"lives": 3},
     {"pacgums": 140},
     {"points_per_pacgum": 10},
@@ -9,5 +9,5 @@
     {"points_per_ghost": 200},
     {"seed": 42},
     {"level_max_time": 300},
-    {"level": 10}
+    {"level": 2}
 ]
