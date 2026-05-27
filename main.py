@@ -335,5 +335,5 @@ def main(argv: List[str]) -> None:
 if __name__ == "__main__":
     try:
         main(sys.argv)
-    except Exception as e:
+    except (Exception, KeyboardInterrupt) as e:
         print(e)
